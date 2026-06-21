@@ -492,11 +492,14 @@ function applyCondition(){
 (function(){
   const hands = new THREE.Group();
   for(const sx of [-1,1]){
-    const a=new THREE.Group(); a.position.set(sx*0.6, 1.46, 1.22);
-    const fo=new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.12,1.0,14), woodMat);
-    fo.rotation.x=Math.PI*0.46; fo.position.set(0,0.02,0.45); fo.castShadow=true; a.add(fo);
-    const b=ball(0.11); b.position.set(0,0.05,0); a.add(b);
-    const hand=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.07,0.32), woodMat); hand.position.set(0,-0.02,-0.18); hand.castShadow=true; a.add(hand);
+    const a=new THREE.Group(); a.position.set(sx*0.62, 1.46, 1.46);
+    // flat hand resting on the table, fingers toward the opponent (-z)
+    const hand=new THREE.Mesh(new THREE.BoxGeometry(0.26,0.07,0.34), woodMat); hand.position.set(0,0,-0.2); hand.castShadow=true; a.add(hand);
+    // wrist joint at the group origin
+    const b=ball(0.1); b.position.set(0,0.01,0); a.add(b);
+    // forearm pivots at the wrist and runs back + down toward you (one continuous limb, no gap)
+    const fo=new THREE.Group(); fo.position.set(0,0.01,0); fo.rotation.x=-1.15; a.add(fo);
+    const foM=new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.11,1.2,14), woodMat); foM.position.y=-0.59; foM.castShadow=true; fo.add(foM);
     hands.add(a);
   }
   scene.add(hands);
