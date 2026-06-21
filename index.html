@@ -498,8 +498,8 @@ function applyCondition(){
     // wrist joint at the group origin
     const b=ball(0.1); b.position.set(0,0.01,0); a.add(b);
     // forearm pivots at the wrist and runs back + down toward you (one continuous limb, no gap)
-    const fo=new THREE.Group(); fo.position.set(0,0.01,0); fo.rotation.x=-1.15; a.add(fo);
-    const foM=new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.11,1.2,14), woodMat); foM.position.y=-0.59; foM.castShadow=true; fo.add(foM);
+    const fo=new THREE.Group(); fo.position.set(0,0.01,0); fo.rotation.x=-1.02; a.add(fo);
+    const foM=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.12,2.6,16), woodMat); foM.position.y=-1.3; foM.castShadow=true; fo.add(foM);
     hands.add(a);
   }
   scene.add(hands);
