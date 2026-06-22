@@ -118,6 +118,7 @@
   .ikQt { font-size:14px; font-weight:600; margin-bottom:8px; }
   .ikOpts { display:flex; gap:8px; flex-wrap:wrap; }
   .ikErr { color:#ff8e8e; font-size:13px; min-height:18px; margin:4px 0 8px; text-align:center; }
+  .ikBack { display:block; margin:14px auto 0; background:none; border:none; color:#a8c4c4; font-size:13px; cursor:pointer; font-family:inherit; text-decoration:underline; }
 </style>
 </head>
 <body>
@@ -152,6 +153,7 @@
         <button class="opt" data-v="0" id="ikQ2a"></button><button class="opt" data-v="1" id="ikQ2b"></button><button class="opt" data-v="2" id="ikQ2c"></button></div></div>
       <div class="ikErr" id="ikErr"></div>
       <button class="startBtn" id="ikBegin"></button>
+      <button id="ikBack" class="ikBack"></button>
     </div>
   </div>
 
@@ -270,7 +272,7 @@ const I18N = {
     ikTitle:"开始前", ikIdLabel:"被试编号（留空则自动生成）",
     ikQ1:"如果你拒绝，这一回合你能拿到多少金币？", ikQ1a:"0 金币", ikQ1b:"对方分给我的数额", ikQ1c:"100 金币",
     ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
-    ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始",
+    ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始", ikBack:"← 返回看规则",
     resCopy:"复制数据", resDownload:"下载CSV"
   },
   en: {
@@ -297,7 +299,7 @@ const I18N = {
     ikTitle:"Before we start", ikIdLabel:"Participant ID (blank = auto)",
     ikQ1:"If you reject, how many coins do you get this round?", ikQ1a:"0 coins", ikQ1b:"The amount offered to me", ikQ1c:"100 coins",
     ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
-    ikErr:"Not quite \u2014 please review the rules and try again.", ikBegin:"Got it, start",
+    ikErr:"Not quite — please review the rules and try again.", ikBegin:"Got it, start", ikBack:"← Back to rules",
     resCopy:"Copy data", resDownload:"Download CSV"
   },
   ja: {
@@ -324,7 +326,7 @@ const I18N = {
     ikTitle:"始める前に", ikIdLabel:"被験者ID（空欄で自動生成）",
     ikQ1:"拒否した場合、このラウンドで何枚もらえますか？", ikQ1a:"0 コイン", ikQ1b:"提示された額", ikQ1c:"100 コイン",
     ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
-    ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始",
+    ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始", ikBack:"← ルールに戻る",
     resCopy:"データをコピー", resDownload:"CSVダウンロード"
   }
 };
@@ -391,7 +393,7 @@ function applyStaticTexts(){
   $('ikTitle').textContent=CUR.ikTitle; $('ikIdLabel').textContent=CUR.ikIdLabel;
   $('ikQ1').textContent=CUR.ikQ1; $('ikQ1a').textContent=CUR.ikQ1a; $('ikQ1b').textContent=CUR.ikQ1b; $('ikQ1c').textContent=CUR.ikQ1c;
   $('ikQ2').textContent=CUR.ikQ2; $('ikQ2a').textContent=CUR.ikQ2a; $('ikQ2b').textContent=CUR.ikQ2b; $('ikQ2c').textContent=CUR.ikQ2c;
-  $('ikBegin').textContent=CUR.ikBegin; $('resCopy').textContent=CUR.resCopy; $('resDownload').textContent=CUR.resDownload;
+  $('ikBegin').textContent=CUR.ikBegin; $('ikBack').textContent=CUR.ikBack; $('resCopy').textContent=CUR.resCopy; $('resDownload').textContent=CUR.resDownload;
   document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
   refreshSettingsUI();
 }
@@ -624,7 +626,7 @@ function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 
 // ============ game ============
 const POT=100, ROUNDS=10, CATCH_OFFER=85;
-const SHEET_ENDPOINT = "";   // <-- paste your Google Apps Script Web App URL here to auto-collect data
+const SHEET_ENDPOINT = "";   // auto-collect OFF for now. Re-enable by pasting your /exec URL here: https://script.google.com/macros/s/AKfycbypaC37h0ZXgsqNbw75GI1bs2WwP70FhPK2XXkKhmbEO3A0n6tNuMEuUihP-NpFWm4dMA/exec
 let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
 let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set();
 let roundStartMs=0, gameStartMs=0;
@@ -831,6 +833,7 @@ $('ikBegin').onclick = ()=>{
 };
 $('resCopy').onclick = copyResult;
 $('resDownload').onclick = downloadResult;
+$('ikBack').onclick = ()=>{ $('intake').classList.add('hidden'); $('start').classList.remove('hidden'); $('start').style.display='flex'; };
 $('btnStart').onclick = ()=>{ showIntake(); };
 
 applyStaticTexts();
