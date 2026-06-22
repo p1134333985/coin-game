@@ -105,6 +105,10 @@
   .card .note { font-size:12px; opacity:.62; line-height:1.6; background:rgba(0,0,0,.25); padding:10px 14px; border-radius:12px; margin:12px 0 18px; text-align:left; }
   .card .decTitle { font-size:12px; opacity:.6; font-weight:700; text-align:left; margin:14px 0 6px; }
   .card .decisions { display:flex; flex-direction:column; gap:4px; max-height:168px; overflow:auto; text-align:left; }
+  .card .drow.cal { opacity:.55; }
+  .card .drow .tag { font-size:10px; font-weight:700; color:#9fb4c4; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18); padding:1px 6px; border-radius:6px; margin-left:7px; vertical-align:1px; }
+  .card .decNote { font-size:11px; opacity:.5; text-align:left; margin-top:7px; line-height:1.5; }
   .card .drow { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px;
     background:rgba(0,0,0,.22); padding:6px 12px; border-radius:9px; }
   .card .drow .rn { opacity:.55; font-size:12px; min-width:60px; }
@@ -235,6 +239,7 @@
       <p id="resMsg"></p>
       <div class="decTitle" id="resDecTitle"></div>
       <div class="decisions" id="resDecisions"></div>
+      <div class="decNote" id="resCalNote"></div>
       <div class="note" id="resNote"></div>
       <div class="row">
         <button class="mini y" id="resAgain"></button>
@@ -282,7 +287,8 @@ const I18N = {
     ikQ1:"如果你拒绝，这一回合你能拿到多少金币？", ikQ1a:"0 金币", ikQ1b:"对方分给我的数额", ikQ1c:"100 金币",
     ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
     ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始", ikBack:"← 返回看规则",
-    resDecTitle:"你这局的选择", resRoundWord:"回合"
+    resDecTitle:"你这局的选择", resRoundWord:"回合",
+    resCalTag:"校准", resCalNote:"标「校准」的回合是注意力检查，不计入上面的最低接受金额。"
   },
   en: {
     sTitle:"The Splitting Game", sSub:"",
@@ -309,7 +315,8 @@ const I18N = {
     ikQ1:"If you reject, how many coins do you get this round?", ikQ1a:"0 coins", ikQ1b:"The amount offered to me", ikQ1c:"100 coins",
     ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
     ikErr:"Not quite — please review the rules and try again.", ikBegin:"Got it, start", ikBack:"← Back to rules",
-    resDecTitle:"Your choices this game", resRoundWord:"Round"
+    resDecTitle:"Your choices this game", resRoundWord:"Round",
+    resCalTag:"check", resCalNote:"Rounds marked “check” are attention checks and don't count toward the amount above."
   },
   ja: {
     sTitle:"分け合いゲーム", sSub:"",
@@ -336,7 +343,8 @@ const I18N = {
     ikQ1:"拒否した場合、このラウンドで何枚もらえますか？", ikQ1a:"0 コイン", ikQ1b:"提示された額", ikQ1c:"100 コイン",
     ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
     ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始", ikBack:"← ルールに戻る",
-    resDecTitle:"今回のあなたの選択", resRoundWord:"ラウンド"
+    resDecTitle:"今回のあなたの選択", resRoundWord:"ラウンド",
+    resCalTag:"確認", resCalNote:"「確認」のラウンドは注意チェック用で、上の最低受入額には含まれません。"
   }
 };
 
@@ -361,6 +369,7 @@ const SAY = {
 const cfg = { advanced:false, expr:'neutral', body:'neutral', tone:'neutral', aiLang:'en', randomize:false };
 let lang = 'en';
 let CUR = I18N[lang];
+let DCUR = I18N[lang];   // in-game decision-language texts (= opponent language; FLE manipulation)
 function eff(){
   if(!cfg.advanced) return {expr:'neutral', body:'neutral', tone:'neutral', lang:lang};
   return {expr:cfg.expr, body:cfg.body, tone:cfg.tone, lang:(cfg.aiLang||lang)};
@@ -511,7 +520,7 @@ const rig = ai.userData;
 const lerp=(a,b,t)=>a+(b-a)*t;
 const easeOut = t => 1-Math.pow(1-t,3);
 const easeOutBack = (s)=> t => { const c3=s+1; return 1 + c3*Math.pow(t-1,3) + s*Math.pow(t-1,2); };
-const REST_R={sh:-0.55,el:-0.95,wr:0.0}, REACH_R={sh:-0.92,el:-0.42,wr:1.25};
+const REST_R={sh:-0.55,el:-0.95,wr:0.0}, REACH_R={sh:-1.04,el:-0.40,wr:1.5};  // sh: lift higher, wr: clearer palm-up presentation
 const REST_L={sh:-0.55,el:-0.95,wr:0.0};
 function setArm(a,p){ a.sh.rotation.x=p.sh; a.el.rotation.x=p.el; a.wr.rotation.x=p.wr; }
 function applySeatedPose(){
@@ -636,7 +645,7 @@ function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 // ============ game ============
 // Version: MAJOR.MINOR. MINOR = cosmetic/wording/animation tweaks (data-compatible).
 // MAJOR = changes that affect data comparability (rounds, catch logic, estimate method, condition defs).
-const APP_VERSION = "4.1";
+const APP_VERSION = "4.4";
 const POT=100, ROUNDS=10;
 // 3 calibration (catch) trials per game; the remaining 7 are real staircase tests.
 // Two high offers (slightly different, should be ACCEPTED) + one low offer 10-20 (should be REJECTED).
@@ -646,7 +655,21 @@ let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
 let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set(), catchPlan={};
 let roundStartMs=0, gameStartMs=0;
 const participant = {id:'', attempts:0};
-function updateRoundUI(){ $('roundc').innerHTML = CUR.round(round, ROUNDS); }
+// In-game decision interface follows the opponent's language (eff().lang). In the control
+// condition eff().lang === lang, so nothing changes; only a foreign aiLang shifts the whole
+// decision context (rules/buttons/round counter) into that language for a cleaner FLE test.
+function applyGameTexts(){
+  DCUR = I18N[eff().lang] || I18N[lang];
+  $('rulesT').textContent = DCUR.rulesTitle;
+  $('rulesB').textContent = DCUR.rules;
+  $('btnAccept').textContent = DCUR.accept;
+  $('btnReject').textContent = DCUR.reject;
+  $('menuBtn').textContent = "≡ " + DCUR.menu;
+  $('confirmText').textContent = DCUR.confirm;
+  $('confYes').textContent = DCUR.yes;
+  $('confNo').textContent = DCUR.no;
+}
+function updateRoundUI(){ $('roundc').innerHTML = (DCUR||CUR).round(round, ROUNDS); }
 function computeOffer(){
   const eLo=Math.max(lo,0), eHi=Math.min(hi,POT);
   if(lo<0 && hi>POT) return 50;
@@ -680,6 +703,7 @@ function startGame(){
   rig.head.rotation.set(0,0,0);
   $('result').classList.remove('show');
   $('hud').classList.add('show'); $('bottomBar').classList.add('show'); $('menuBtn').classList.add('show');
+  applyGameTexts();
   updateRoundUI();
   nextRound();
 }
@@ -773,6 +797,7 @@ function finish(){
     durationMs:Math.round(performance.now()-gameStartMs), rounds:roundLog.slice() };
   window.__lastResult=payload;
   console.log('[ultimatum] result', payload);
+  storeSession(payload);
   submitData(payload);
   $('resNum').textContent = CUR.resUnit(est);
   $('resPct').textContent = CUR.resPct(pct);
@@ -781,8 +806,11 @@ function finish(){
   $('resDecTitle').textContent = CUR.resDecTitle;
   $('resDecisions').innerHTML = roundLog.map(r=>{
     const dec = r.accepted ? `<span class="dec acc">${CUR.accept}</span>` : `<span class="dec rej">${CUR.reject}</span>`;
-    return `<div class="drow"><span class="rn">${CUR.resRoundWord} ${r.round}</span><span class="amt">${CUR.resUnit(r.offer)}</span>${dec}</div>`;
+    const cal = r.type==='catch';
+    const tag = cal ? `<span class="tag">${CUR.resCalTag}</span>` : '';
+    return `<div class="drow${cal?' cal':''}"><span class="rn">${CUR.resRoundWord} ${r.round}${tag}</span><span class="amt">${CUR.resUnit(r.offer)}</span>${dec}</div>`;
   }).join('');
+  $('resCalNote').textContent = CUR.resCalNote;
   $('result').classList.add('show');
 }
 
@@ -799,8 +827,27 @@ function resultCSV(p){
   return cols.join(',')+'\n'+row.map(csvCell).join(',');
 }
 function downloadResult(){ const t=resultCSV(window.__lastResult); const blob=new Blob([t],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ultimatum_'+(window.__lastResult.participantId||'data')+'.csv'; a.click(); }
-// participant page no longer shows export buttons; experimenter can still call these from the console.
+// ---- safety net: every finished session is appended to localStorage so data survives a closed tab
+//      even when SHEET_ENDPOINT is empty. Experimenter pulls everything with exportAllCSV().
+const STORE_KEY='ultimatum_sessions';
+function loadSessions(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }catch(e){ return []; } }
+function storeSession(p){ try{ const a=loadSessions(); a.push(p); localStorage.setItem(STORE_KEY, JSON.stringify(a)); }catch(e){ console.warn('[ultimatum] local store failed', e); } }
+function exportAllCSV(){
+  const arr=loadSessions();
+  if(!arr.length){ console.warn('[ultimatum] no stored sessions yet'); return 0; }
+  const header=resultCSV(arr[0]).split('\n')[0];
+  const csv=header+'\n'+arr.map(p=>resultCSV(p).split('\n')[1]).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='ultimatum_all_'+arr.length+'.csv'; a.click();
+  return arr.length;
+}
+function clearStoredSessions(){ localStorage.removeItem(STORE_KEY); console.log('[ultimatum] stored sessions cleared'); }
+// participant page no longer shows export buttons; experimenter calls these from the console:
+//   exportAllCSV()  → download every session collected on this device
+//   loadSessions().length  → how many collected so far
+//   clearStoredSessions()  → reset between studies
 window.resultCSV = resultCSV; window.downloadResult = downloadResult;
+window.exportAllCSV = exportAllCSV; window.loadSessions = loadSessions; window.clearStoredSessions = clearStoredSessions;
 
 // ============ settings UI ============
 function refreshSettingsUI(){
