@@ -109,6 +109,17 @@
   .card .drow .tag { font-size:10px; font-weight:700; color:#9fb4c4; background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.18); padding:1px 6px; border-radius:6px; margin-left:7px; vertical-align:1px; }
   .card .decNote { font-size:11px; opacity:.5; text-align:left; margin-top:7px; line-height:1.5; }
+  .card .payLine { margin-top:12px; font-size:15px; font-weight:800; color:#ffd86b; }
+  #survey .card { max-height:88vh; overflow:auto; }
+  .card .svItem { text-align:left; margin:16px 0; }
+  .card .svItem .svQ { font-size:14px; margin-bottom:8px; }
+  .card .svScale { display:flex; gap:6px; }
+  .card .svScale button { flex:1; padding:9px 0; border-radius:8px; border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06); color:#cfe0ee; font-weight:700; cursor:pointer; font-size:13px; }
+  .card .svScale button.sel { background:#ffd86b; color:#1a2733; border-color:#ffd86b; }
+  .card .svEnds { display:flex; justify-content:space-between; font-size:11px; opacity:.55; margin-top:5px; }
+  #survey textarea { width:100%; box-sizing:border-box; margin-top:6px; background:rgba(0,0,0,.25);
+    border:1px solid rgba(255,255,255,.18); border-radius:8px; color:#fff; padding:8px; font-family:inherit; font-size:13px; resize:vertical; }
   .card .drow { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px;
     background:rgba(0,0,0,.22); padding:6px 12px; border-radius:9px; }
   .card .drow .rn { opacity:.55; font-size:12px; min-width:60px; }
@@ -116,6 +127,7 @@
   .card .drow .dec { font-weight:700; font-size:12px; white-space:nowrap; }
   .card .drow .acc { color:#37c47a; }
   .card .drow .rej { color:#ef5d5d; }
+  .card .drow .rt { font-size:11px; opacity:.5; min-width:46px; text-align:right; }
   .card .row { display:flex; gap:12px; justify-content:center; }
   .card .mini { font-size:15px; padding:12px 26px; border-radius:30px; border:none; cursor:pointer; font-family:inherit; font-weight:700; }
   .card .y { background:linear-gradient(135deg,#ffd86b,#f0b429); color:#3a2a00; }
@@ -166,6 +178,12 @@
         <button class="opt" data-v="0" id="ikQ1a"></button><button class="opt" data-v="1" id="ikQ1b"></button><button class="opt" data-v="2" id="ikQ1c"></button></div></div>
       <div class="ikQ"><div class="ikQt" id="ikQ2"></div><div class="ikOpts" data-q="q2">
         <button class="opt" data-v="0" id="ikQ2a"></button><button class="opt" data-v="1" id="ikQ2b"></button><button class="opt" data-v="2" id="ikQ2c"></button></div></div>
+      <div class="ikQ"><div class="ikQt" id="ikL1Q"></div><div class="ikOpts" data-q="l1">
+        <button class="opt" data-v="zh" id="ikL1zh"></button><button class="opt" data-v="en" id="ikL1en"></button><button class="opt" data-v="ja" id="ikL1ja"></button><button class="opt" data-v="other" id="ikL1other"></button></div></div>
+      <div class="ikQ" id="ikProfRow"><div class="ikQt" id="ikProfQ"></div><div class="ikOpts" data-q="prof">
+        <button class="opt" data-v="1" id="ikProf1"></button><button class="opt" data-v="2" id="ikProf2"></button><button class="opt" data-v="3" id="ikProf3"></button><button class="opt" data-v="4" id="ikProf4"></button><button class="opt" data-v="5" id="ikProf5"></button></div></div>
+      <div class="ikQ" id="ikAoaRow"><div class="ikQt" id="ikAoaQ"></div><div class="ikOpts" data-q="aoa">
+        <button class="opt" data-v="1" id="ikAoa1"></button><button class="opt" data-v="2" id="ikAoa2"></button><button class="opt" data-v="3" id="ikAoa3"></button><button class="opt" data-v="4" id="ikAoa4"></button></div></div>
       <div class="ikErr" id="ikErr"></div>
       <button class="startBtn" id="ikBegin"></button>
       <button id="ikBack" class="ikBack"></button>
@@ -177,6 +195,8 @@
     <div class="sCard">
       <h2 id="setTitle"></h2>
       <div class="note" id="setNote"></div>
+      <div class="sRow"><div class="lab"><span id="setMoney"></span><button class="toggle" id="tgMoney"></button></div></div>
+      <div class="note" id="setMoneyNote" style="margin-top:-6px"></div>
       <div class="sRow"><div class="lab"><span id="setAdv"></span><button class="toggle" id="tgAdv"></button></div></div>
       <div id="advBox">
         <div class="sRow"><div class="lab"><span id="lblExpr"></span></div>
@@ -240,11 +260,23 @@
       <div class="decTitle" id="resDecTitle"></div>
       <div class="decisions" id="resDecisions"></div>
       <div class="decNote" id="resCalNote"></div>
+      <div class="payLine" id="resPay" style="display:none"></div>
       <div class="note" id="resNote"></div>
       <div class="row">
         <button class="mini y" id="resAgain"></button>
         <button class="mini n" id="resMenu"></button>
       </div>
+    </div>
+  </div>
+
+  <!-- POST-GAME SURVEY: manipulation checks + emotion + mind perception + funnel debrief -->
+  <div class="overlay" id="survey">
+    <div class="card">
+      <h2 id="svTitle"></h2>
+      <div id="svItems"></div>
+      <div class="ikField"><label id="svDebriefL"></label><textarea id="svDebrief" rows="2"></textarea></div>
+      <div class="ikErr" id="svErr"></div>
+      <button class="startBtn" id="svDone"></button>
     </div>
   </div>
 
@@ -288,7 +320,20 @@ const I18N = {
     ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
     ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始", ikBack:"← 返回看规则",
     resDecTitle:"你这局的选择", resRoundWord:"回合",
-    resCalTag:"校准", resCalNote:"标「校准」的回合是注意力检查，不计入上面的最低接受金额。"
+    resCalTag:"校准", resCalNote:"标「校准」的回合是注意力检查，不计入上面的最低接受金额。",
+    setMoney:"真实货币", moneyNote:"100 金币 = ¥1000，金额以日元显示。游戏不向被试承诺支付（防止策略性抬高底线）；随机抽一局的金额会记进数据，是否实付由你线下决定。",
+    payResult:(rd,amt)=>`随机结算：第 ${rd} 回合 → 你实得 ${amt}`,
+    ikL1Q:"你的母语是？", ikL1zh:"中文", ikL1en:"English", ikL1ja:"日本語", ikL1other:"其他",
+    ikProfQ:(L)=>`你的【${L}】熟练度？`, ikProf1:"入门", ikProf2:"初级", ikProf3:"中级", ikProf4:"高级", ikProf5:"母语水平",
+    ikAoaQ:(L)=>`你大概几岁开始接触【${L}】？`, ikAoa1:"0–6岁", ikAoa2:"7–12岁", ikAoa3:"13–18岁", ikAoa4:"成年以后",
+    ikBgErr:"请回答上面的语言背景问题。",
+    svTitle:"最后几个小问题", svDone:"提交", svErr:"请回答全部评分题（最后一题可留空）。",
+    svDebrief:"你觉得这个研究想了解什么？（可留空）",
+    svFriendly:{q:"对方给你的整体感觉是？", lo:"很有敌意", hi:"很友好"},
+    svPolite:{q:"对方说话的语气？", lo:"很无礼", hi:"很有礼貌"},
+    svFair:{q:"总体来说，对方的出价公平吗？", lo:"很不公平", hi:"很公平"},
+    svAnger:{q:"对方的出价让你多生气／不爽？", lo:"完全不会", hi:"非常生气"},
+    svMind:{q:"对方在你眼中，多像一个有想法、有感受的人？", lo:"完全不像", hi:"非常像"}
   },
   en: {
     sTitle:"The Splitting Game", sSub:"",
@@ -316,7 +361,20 @@ const I18N = {
     ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
     ikErr:"Not quite — please review the rules and try again.", ikBegin:"Got it, start", ikBack:"← Back to rules",
     resDecTitle:"Your choices this game", resRoundWord:"Round",
-    resCalTag:"check", resCalNote:"Rounds marked “check” are attention checks and don't count toward the amount above."
+    resCalTag:"check", resCalNote:"Rounds marked “check” are attention checks and don't count toward the amount above.",
+    setMoney:"Real money", moneyNote:"100 coins = ¥1000, shown in yen. No payout is promised to participants (prevents strategic inflation of the threshold); the random-round amount is recorded in the data — pay it out offline if you choose.",
+    payResult:(rd,amt)=>`Random payout: round ${rd} → you earned ${amt}`,
+    ikL1Q:"What is your native language?", ikL1zh:"中文", ikL1en:"English", ikL1ja:"日本語", ikL1other:"Other",
+    ikProfQ:(L)=>`How proficient are you in ${L}?`, ikProf1:"Beginner", ikProf2:"Elementary", ikProf3:"Intermediate", ikProf4:"Advanced", ikProf5:"Native-like",
+    ikAoaQ:(L)=>`Around what age did you start learning ${L}?`, ikAoa1:"0–6", ikAoa2:"7–12", ikAoa3:"13–18", ikAoa4:"Adulthood",
+    ikBgErr:"Please answer the language-background question(s) above.",
+    svTitle:"A few last questions", svDone:"Submit", svErr:"Please answer all rating questions (the last one is optional).",
+    svDebrief:"What do you think this study was trying to find out? (optional)",
+    svFriendly:{q:"Overall, the other player felt…", lo:"very hostile", hi:"very friendly"},
+    svPolite:{q:"The other player's tone was…", lo:"very rude", hi:"very polite"},
+    svFair:{q:"Overall, were the offers fair?", lo:"very unfair", hi:"very fair"},
+    svAnger:{q:"How angry / annoyed did the offers make you?", lo:"not at all", hi:"very angry"},
+    svMind:{q:"How much did the other player seem like someone with thoughts and feelings?", lo:"not at all", hi:"very much"}
   },
   ja: {
     sTitle:"分け合いゲーム", sSub:"",
@@ -344,7 +402,20 @@ const I18N = {
     ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
     ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始", ikBack:"← ルールに戻る",
     resDecTitle:"今回のあなたの選択", resRoundWord:"ラウンド",
-    resCalTag:"確認", resCalNote:"「確認」のラウンドは注意チェック用で、上の最低受入額には含まれません。"
+    resCalTag:"確認", resCalNote:"「確認」のラウンドは注意チェック用で、上の最低受入額には含まれません。",
+    setMoney:"実報酬", moneyNote:"100コイン = ¥1000、金額は円で表示。被験者には支払いを約束しません（閾値の戦略的引き上げ防止）。抽選1ラウンドの金額はデータに記録され、実支払いは任意でオフライン対応。",
+    payResult:(rd,amt)=>`抽選払い：第${rd}ラウンド → 受取額 ${amt}`,
+    ikL1Q:"あなたの母語は？", ikL1zh:"中文", ikL1en:"English", ikL1ja:"日本語", ikL1other:"その他",
+    ikProfQ:(L)=>`${L} の習熟度は？`, ikProf1:"入門", ikProf2:"初級", ikProf3:"中級", ikProf4:"上級", ikProf5:"母語レベル",
+    ikAoaQ:(L)=>`${L} を学び始めたのは何歳ごろ？`, ikAoa1:"0–6歳", ikAoa2:"7–12歳", ikAoa3:"13–18歳", ikAoa4:"成人以降",
+    ikBgErr:"上記の言語背景の質問にお答えください。",
+    svTitle:"最後にいくつか質問", svDone:"送信", svErr:"評価項目にすべてお答えください（最後の記述は任意）。",
+    svDebrief:"この研究は何を調べようとしていたと思いますか？（任意）",
+    svFriendly:{q:"相手の全体的な印象は？", lo:"とても敵対的", hi:"とても友好的"},
+    svPolite:{q:"相手の話し方の口調は？", lo:"とても無礼", hi:"とても丁寧"},
+    svFair:{q:"全体として、相手の提示は公平でしたか？", lo:"とても不公平", hi:"とても公平"},
+    svAnger:{q:"相手の提示にどれくらい腹が立ちましたか？", lo:"全く", hi:"とても"},
+    svMind:{q:"相手は「考えや感情を持つ人」にどれくらい見えましたか？", lo:"全く見えない", hi:"とても見える"}
   }
 };
 
@@ -352,21 +423,27 @@ const I18N = {
 // % = placeholder for the gold number. neutral lines are purely transactional (no fairness comment).
 const SAY = {
   zh:{ think:"嗯……", tone:{
-    neutral:["我给你 % 金币。","这回合 % 金币。","% 金币，给你。","分你 % 金币。","这次 % 金币。","% 金币归你。","本回合给你 % 金币。","就 % 金币。"],
-    polite:["这回合我想分 % 金币给你～","给你 % 金币，希望你满意 :)","我分你 % 金币，可以吗？","% 金币，请收下～","这回合分你 % 金币，还行吗？","% 金币给你，希望合适～","给你 % 金币，慢慢考虑不急 :)","% 金币，谢谢你陪我玩～"],
-    rude:["给你 %，拿着。","就 % 金币，爱要不要。","%，别废话。","% 金币，快拿走。","就这 %，嫌少别接。","% 而已，墨迹什么。","拿着 % 金币，快点。","%，给你脸了。"] }},
+    neutral:["我给你 %。","这回合 %。","%，给你。","分你 %。","这次 %。","% 归你。","本回合给你 %。","就 %。"],
+    polite:["这回合我想分 % 给你～","给你 %，希望你满意 :)","我分你 %，可以吗？","%，请收下～","这回合分你 %，还行吗？","% 给你，希望合适～","给你 %，慢慢考虑不急 :)","%，谢谢你陪我玩～"],
+    rude:["给你 %，拿着。","就 %，爱要不要。","%，别废话。","%，快拿走。","就这 %，嫌少别接。","% 而已，墨迹什么。","拿着 %，快点。","%，给你脸了。"] }},
   en:{ think:"Hmm…", tone:{
-    neutral:["I'll give you % coins.","% coins this round.","You get % coins.","Here are % coins.","Your share: % coins.","I'm offering % coins.","Take % coins.","% coins, that's the split."],
-    polite:["I'd love to share % coins with you!","Here's % coins for you, hope that's good :)","I'll happily give you % coins.","% coins for you — please take them~","Maybe % coins works for you?","% coins, thanks for playing with me :)","I'll offer % coins, no rush at all~","Here's % coins, hope it feels fair."],
-    rude:["Here, %. Take it.","% coins. Take it or leave it.","Just %. Don't argue.","% coins, hurry up.","%, that's it.","Only %. Deal with it.","Take the %, move on.","% coins, quit whining."] }},
+    neutral:["I'll give you %.","% this round.","You get %.","Here's %.","Your share: %.","I'm offering %.","Take %.","%, that's the split."],
+    polite:["I'd love to share % with you!","Here's % for you, hope that's good :)","I'll happily give you %.","% for you — please take it~","Maybe % works for you?","%, thanks for playing with me :)","I'll offer %, no rush at all~","Here's %, hope it feels fair."],
+    rude:["Here, %. Take it.","%. Take it or leave it.","Just %. Don't argue.","%, hurry up.","%, that's it.","Only %. Deal with it.","Take the %, move on.","%, quit whining."] }},
   ja:{ think:"うーん…", tone:{
-    neutral:["% コインあげる。","今回は % コイン。","% コイン、君に。","% コイン渡すよ。","取り分は % コイン。","% コインだ。","% コインを渡す。","今回の分は % コイン。"],
-    polite:["% コイン、君に分けたいな！","% コインどうぞ、気に入ってくれると嬉しいな :)","% コイン、受け取ってくれる？","% コイン、よかったらどうぞ～","% コインでどうかな？","% コイン、遊んでくれてありがとう :)","% コイン、ゆっくり考えていいよ～","% コイン、君に合うといいな。"],
-    rude:["ほら、% コイン。受け取れ。","% コインだ。文句あるか。","% だ、つべこべ言うな。","% コイン、早く取れ。","%、それだけだ。","たった % だ、諦めろ。","さっさと % 取れ。","% コイン、ぐだぐだ言うな。"] }}
+    neutral:["% あげる。","今回は %。","%、君に。","% 渡すよ。","取り分は %。","% だ。","% を渡す。","今回の分は %。"],
+    polite:["%、君に分けたいな！","% どうぞ、気に入ってくれると嬉しいな :)","%、受け取ってくれる？","%、よかったらどうぞ～","% でどうかな？","%、遊んでくれてありがとう :)","%、ゆっくり考えていいよ～","%、君に合うといいな。"],
+    rude:["ほら、%。受け取れ。","% だ。文句あるか。","% だ、つべこべ言うな。","%、早く取れ。","%、それだけだ。","たった % だ、諦めろ。","さっさと % 取れ。","%、ぐだぐだ言うな。"] }}
 };
 
 // ============ config: four independent variables (baseline when advanced off) ============
-const cfg = { advanced:false, expr:'neutral', body:'neutral', tone:'neutral', aiLang:'en', randomize:false };
+const cfg = { advanced:false, expr:'neutral', body:'neutral', tone:'neutral', aiLang:'en', randomize:false, realMoney:false };
+// format a coin amount for display: real-money mode → currency, else token+unit (per language)
+const COIN_UNIT = { zh:'金币', en:'coins', ja:'コイン' };
+function fmtAmt(coins, lk){ lk = lk || lang;
+  if(cfg.realMoney){ const v = coins*COIN_VALUE; return lk==='ja' ? (v+'円') : ('¥'+v); }
+  return coins + ' ' + (COIN_UNIT[lk]||COIN_UNIT.en);
+}
 let lang = 'en';
 let CUR = I18N[lang];
 let DCUR = I18N[lang];   // in-game decision-language texts (= opponent language; FLE manipulation)
@@ -375,7 +452,7 @@ function eff(){
   return {expr:cfg.expr, body:cfg.body, tone:cfg.tone, lang:(cfg.aiLang||lang)};
 }
 function aiLine(n){ const c=eff(); const L=SAY[c.lang]||SAY.en; const arr=(L.tone[c.tone]||L.tone.neutral);
-  return arr[Math.floor(Math.random()*arr.length)].replace('%', `<span class="num">${n}</span>`); }
+  return arr[Math.floor(Math.random()*arr.length)].replace('%', `<span class="num">${fmtAmt(n, c.lang)}</span>`); }
 function aiThink(){ const c=eff(); return (SAY[c.lang]||SAY.en).think; }
 
 const $ = id => document.getElementById(id);
@@ -397,6 +474,8 @@ function applyStaticTexts(){
   $('confNo').textContent = CUR.no;
   $('setTitle').textContent = CUR.setTitle;
   $('setNote').textContent = CUR.setNote;
+  $('setMoney').textContent = CUR.setMoney;
+  $('setMoneyNote').textContent = CUR.moneyNote;
   $('setAdv').textContent = CUR.setAdv;
   $('lblExpr').textContent = CUR.lblExpr; $('lblBody').textContent = CUR.lblBody;
   $('lblTone').textContent = CUR.lblTone; $('lblLang').textContent = CUR.lblLang;
@@ -412,6 +491,10 @@ function applyStaticTexts(){
   $('ikQ1').textContent=CUR.ikQ1; $('ikQ1a').textContent=CUR.ikQ1a; $('ikQ1b').textContent=CUR.ikQ1b; $('ikQ1c').textContent=CUR.ikQ1c;
   $('ikQ2').textContent=CUR.ikQ2; $('ikQ2a').textContent=CUR.ikQ2a; $('ikQ2b').textContent=CUR.ikQ2b; $('ikQ2c').textContent=CUR.ikQ2c;
   $('ikBegin').textContent=CUR.ikBegin; $('ikBack').textContent=CUR.ikBack; $('resDecTitle').textContent=CUR.resDecTitle;
+  $('ikL1Q').textContent=CUR.ikL1Q;
+  $('ikL1zh').textContent=CUR.ikL1zh; $('ikL1en').textContent=CUR.ikL1en; $('ikL1ja').textContent=CUR.ikL1ja; $('ikL1other').textContent=CUR.ikL1other;
+  $('ikProf1').textContent=CUR.ikProf1; $('ikProf2').textContent=CUR.ikProf2; $('ikProf3').textContent=CUR.ikProf3; $('ikProf4').textContent=CUR.ikProf4; $('ikProf5').textContent=CUR.ikProf5;
+  $('ikAoa1').textContent=CUR.ikAoa1; $('ikAoa2').textContent=CUR.ikAoa2; $('ikAoa3').textContent=CUR.ikAoa3; $('ikAoa4').textContent=CUR.ikAoa4;
   document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
   refreshSettingsUI();
 }
@@ -645,14 +728,22 @@ function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 // ============ game ============
 // Version: MAJOR.MINOR. MINOR = cosmetic/wording/animation tweaks (data-compatible).
 // MAJOR = changes that affect data comparability (rounds, catch logic, estimate method, condition defs).
-const APP_VERSION = "4.4";
+const APP_VERSION = "5.0";
 const POT=100, ROUNDS=10;
+// real-money incentive (optional, off by default). Total pie = REAL_STAKE for the 100-coin pot.
+// Level chosen from prior research (classic UG ~$10 / Roth et al. 1991 Japan-inclusive scale).
+const REAL_STAKE = 1000;            // JPY for the full 100-coin pie
+const COIN_VALUE = REAL_STAKE/POT;  // 10 JPY per coin
 // 3 calibration (catch) trials per game; the remaining 7 are real staircase tests.
 // Two high offers (slightly different, should be ACCEPTED) + one low offer 10-20 (should be REJECTED).
 const N_CATCH = 3;
 const SHEET_ENDPOINT = "";   // auto-collect OFF for now. Re-enable by pasting your /exec URL here: https://script.google.com/macros/s/AKfycbypaC37h0ZXgsqNbw75GI1bs2WwP70FhPK2XXkKhmbEO3A0n6tNuMEuUihP-NpFWm4dMA/exec
-let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
-let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set(), catchPlan={};
+let round, offer, awaiting, runToken=0, roundLog=[];
+let curType='staircase', reversals=[], catchRounds=new Set(), catchPlan={};
+let curOffer=50, stairStep=16, downCount=0, lastStepDir=0;   // transformed up-down staircase state
+let survey={};                                    // post-game manipulation-check / emotion / debrief answers
+const LANG_NAME = { zh:'中文', en:'English', ja:'日本語' };
+const RT_UNIT = { zh:'秒', en:'s', ja:'秒' };       // reaction-time unit on the result page
 let roundStartMs=0, gameStartMs=0;
 const participant = {id:'', attempts:0};
 // In-game decision interface follows the opponent's language (eff().lang). In the control
@@ -661,7 +752,7 @@ const participant = {id:'', attempts:0};
 function applyGameTexts(){
   DCUR = I18N[eff().lang] || I18N[lang];
   $('rulesT').textContent = DCUR.rulesTitle;
-  $('rulesB').textContent = DCUR.rules;
+  $('rulesB').textContent = DCUR.rules;   // never promise real payout to the participant
   $('btnAccept').textContent = DCUR.accept;
   $('btnReject').textContent = DCUR.reject;
   $('menuBtn').textContent = "≡ " + DCUR.menu;
@@ -670,13 +761,11 @@ function applyGameTexts(){
   $('confNo').textContent = DCUR.no;
 }
 function updateRoundUI(){ $('roundc').innerHTML = (DCUR||CUR).round(round, ROUNDS); }
-function computeOffer(){
-  const eLo=Math.max(lo,0), eHi=Math.min(hi,POT);
-  if(lo<0 && hi>POT) return 50;
-  let n=Math.round((eLo+eHi)/2);
-  if(n===prevOffer) n += (hi>POT?1:-1);
-  return Math.max(0,Math.min(POT,n));
-}
+// transformed up-down staircase (Levitt 1971): 2-down / 1-up → converges to the offer accepted ~70.7%
+// of the time. Step halves after the first reversal; MAO = mean of reversal levels (first dropped).
+const STAIR_DOWN=2;                                  // consecutive ACCEPTs needed to lower the offer
+const STAIR_START=50, STAIR_BIG=16, STAIR_SMALL=8;   // start level; big step until first reversal, then small
+function computeOffer(){ return curOffer; }          // next staircase offer = current level
 const rand = a => a[Math.floor(Math.random()*a.length)];
 
 function startGame(){
@@ -688,8 +777,8 @@ function startGame(){
     cfg.tone=rand(['polite','neutral','rude']);
     console.log('[ultimatum] randomized condition:', cfg.expr, cfg.body, cfg.tone, '| lang', cfg.aiLang||lang);
   }
-  lo=-1; hi=POT+1; round=1; prevOffer=null; awaiting=false; roundLog=[];
-  reversals=[]; lastStairResp=null;
+  round=1; offer=0; awaiting=false; roundLog=[]; reversals=[];
+  curOffer=STAIR_START; stairStep=STAIR_BIG; downCount=0; lastStepDir=0;
   catchRounds=new Set(); catchPlan={};
   const hi1 = 80 + Math.floor(Math.random()*4);    // 80-83, should accept
   const hi2 = 88 + Math.floor(Math.random()*5);    // 88-92, should accept (clearly differs from hi1)
@@ -750,9 +839,14 @@ async function decide(accepted){
   awaiting=false; setButtons(false); hideSay();
   roundLog.push({round, type:curType, offer, accepted, rtMs:rt, ...(curType==='catch'?{expectAccept:catchPlan[round].expectAccept}:{})});
   if(curType==='staircase'){
-    if(accepted) hi=Math.min(hi,offer); else lo=Math.max(lo,offer);
-    if(lastStairResp!==null && lastStairResp!==accepted) reversals.push(offer);
-    lastStairResp=accepted; prevOffer=offer;
+    let stepDir=0;                                // -1 = lower the offer, +1 = raise it, 0 = no move this trial
+    if(accepted){ if(++downCount>=STAIR_DOWN){ stepDir=-1; downCount=0; } }
+    else { stepDir=+1; downCount=0; }             // single reject raises the offer (1-up)
+    if(stepDir!==0){
+      if(lastStepDir!==0 && stepDir!==lastStepDir){ reversals.push(curOffer); if(stairStep>STAIR_SMALL) stairStep=STAIR_SMALL; }
+      lastStepDir=stepDir;
+      curOffer=Math.max(0,Math.min(POT, curOffer+stepDir*stairStep));
+    }
   }
   const c=eff();
   if(accepted){
@@ -769,10 +863,40 @@ async function decide(accepted){
   await anim(.3,p=>setReach(1-p));
   clearCoins();
   if(token!==runToken) return;
-  if(round>=ROUNDS){ finish(); return; }
+  if(round>=ROUNDS){ showSurvey(); return; }
   round++; await wait(320); if(token!==runToken) return;
   nextRound();
 }
+
+// ---- post-game survey: manipulation checks (expr/tone), perceived fairness, anger (emotion mediator),
+//      mind perception (anthropomorphism), and a funnel-debrief item. Shown once after the 10 rounds.
+const SV_ITEMS = [['friendly','svFriendly'],['polite','svPolite'],['fair','svFair'],['anger','svAnger'],['mind','svMind']];
+function buildSurvey(){
+  survey = {};
+  $('svItems').innerHTML = SV_ITEMS.map(([k,ik])=>{
+    const it = CUR[ik];
+    const btns = [1,2,3,4,5,6,7].map(v=>`<button data-k="${k}" data-v="${v}">${v}</button>`).join('');
+    return `<div class="svItem"><div class="svQ">${it.q}</div><div class="svScale">${btns}</div><div class="svEnds"><span>${it.lo}</span><span>${it.hi}</span></div></div>`;
+  }).join('');
+  $('svItems').querySelectorAll('.svScale button').forEach(b=>{ b.onclick=()=>{
+    const k=b.dataset.k; survey[k]=+b.dataset.v;
+    $('svItems').querySelectorAll(`button[data-k="${k}"]`).forEach(x=>x.classList.toggle('sel', x===b));
+  }; });
+  $('svTitle').textContent=CUR.svTitle; $('svDebriefL').textContent=CUR.svDebrief;
+  $('svDebrief').value=''; $('svErr').textContent=''; $('svDone').textContent=CUR.svDone;
+}
+function showSurvey(){
+  setButtons(false); hideSay();
+  $('bottomBar').classList.remove('show'); $('menuBtn').classList.remove('show');
+  buildSurvey();
+  $('survey').classList.add('show');
+}
+$('svDone').onclick = ()=>{
+  if(SV_ITEMS.some(([k])=>survey[k]==null)){ $('svErr').textContent=CUR.svErr; return; }
+  survey.debrief = ($('svDebrief').value||'').trim();
+  $('survey').classList.remove('show');
+  finish();
+};
 
 function finish(){
   setButtons(false); hideSay();
@@ -782,15 +906,24 @@ function finish(){
   const minAcc=acc.length?Math.min.apply(null,acc):null, maxRej=rej.length?Math.max.apply(null,rej):null;
   let est, method;
   if(reversals.length>=2){ const rr=reversals.length>=3?reversals.slice(1):reversals; est=Math.round(rr.reduce((a,b)=>a+b,0)/rr.length); method='reversal_mean'; }
-  else { const eLo=Math.max(lo,0),eHi=Math.min(hi,POT); est=(lo>=0&&hi<=POT)?Math.round((eLo+eHi)/2):(hi<=POT?hi:(lo>=0?lo:50)); method='staircase_midpoint'; }
+  else { est=Math.round(curOffer); method='final_level'; }   // too few reversals → final staircase level
   const pct=Math.round(est/POT*100);
   const catches=roundLog.filter(r=>r.type==='catch');
   const catchPassed = catches.length? catches.every(r=>r.accepted===r.expectAccept) : null;
   const monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
   const flags=[]; if(catchPassed===false) flags.push('failed_catch'); if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals');
   const c=eff();
+  // real-money incentive: pay one randomly chosen REAL decision round (staircase, never a catch)
+  let payout=null;
+  if(cfg.realMoney && stair.length){
+    const pick=stair[Math.floor(Math.random()*stair.length)];
+    const earnedCoins = pick.accepted ? pick.offer : 0;
+    payout={ round:pick.round, offerCoins:pick.offer, accepted:pick.accepted, earnedCoins, earnedJPY:earnedCoins*COIN_VALUE };
+  }
   const payload={ ts:new Date().toISOString(), appVersion:APP_VERSION, participantId:participant.id, uiLang:lang,
     condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced},
+    languageBackground: participant.lang||null, survey:{...survey},
+    realMoney:cfg.realMoney, stakeJPY:cfg.realMoney?REAL_STAKE:0, payout,
     minAcceptable:est, pctOfPot:pct, estimateMethod:method,
     nReversals:reversals.length, reversals:reversals.slice(), monotonic, catchPassed, flags,
     minAccepted:minAcc, maxRejected:maxRej, comprehensionAttempts:participant.attempts,
@@ -799,8 +932,9 @@ function finish(){
   console.log('[ultimatum] result', payload);
   storeSession(payload);
   submitData(payload);
-  $('resNum').textContent = CUR.resUnit(est);
+  $('resNum').textContent = fmtAmt(est, lang);
   $('resPct').textContent = CUR.resPct(pct);
+  $('resPay').style.display='none';   // payout is recorded silently in data; never shown to the participant
   $('resMsg').textContent = CUR.resMsg;
   $('resNote').textContent = CUR.resNote(pct);
   $('resDecTitle').textContent = CUR.resDecTitle;
@@ -808,7 +942,8 @@ function finish(){
     const dec = r.accepted ? `<span class="dec acc">${CUR.accept}</span>` : `<span class="dec rej">${CUR.reject}</span>`;
     const cal = r.type==='catch';
     const tag = cal ? `<span class="tag">${CUR.resCalTag}</span>` : '';
-    return `<div class="drow${cal?' cal':''}"><span class="rn">${CUR.resRoundWord} ${r.round}${tag}</span><span class="amt">${CUR.resUnit(r.offer)}</span>${dec}</div>`;
+    const rt = `<span class="rt">${(r.rtMs/1000).toFixed(1)}${RT_UNIT[lang]||'s'}</span>`;
+    return `<div class="drow${cal?' cal':''}"><span class="rn">${CUR.resRoundWord} ${r.round}${tag}</span><span class="amt">${fmtAmt(r.offer, lang)}</span>${dec}${rt}</div>`;
   }).join('');
   $('resCalNote').textContent = CUR.resCalNote;
   $('result').classList.add('show');
@@ -822,8 +957,9 @@ function submitData(p){
 }
 function csvCell(v){ const x=(v==null?'':typeof v==='object'?JSON.stringify(v):String(v)); return '"'+x.replace(/"/g,'""')+'"'; }
 function resultCSV(p){
-  const cols=['ts','appVersion','participantId','uiLang','advanced','expr','body','tone','aiLang','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','comprehensionAttempts','durationMs','rounds'];
-  const row=[p.ts,p.appVersion,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,p.comprehensionAttempts,p.durationMs,p.rounds];
+  const pay=p.payout||{}; const lb=p.languageBackground||{}; const sv=p.survey||{};
+  const cols=['ts','appVersion','participantId','uiLang','advanced','expr','body','tone','aiLang','l1','decisionLang','proficiency','aoa','realMoney','stakeJPY','payoutRound','payoutEarnedJPY','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','q_friendly','q_polite','q_fair','q_anger','q_mind','debrief','comprehensionAttempts','durationMs','rounds'];
+  const row=[p.ts,p.appVersion,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,lb.l1,lb.decisionLang,lb.proficiency,lb.aoa,p.realMoney,p.stakeJPY,pay.round,pay.earnedJPY,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,sv.friendly,sv.polite,sv.fair,sv.anger,sv.mind,sv.debrief,p.comprehensionAttempts,p.durationMs,p.rounds];
   return cols.join(',')+'\n'+row.map(csvCell).join(',');
 }
 function downloadResult(){ const t=resultCSV(window.__lastResult); const blob=new Blob([t],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ultimatum_'+(window.__lastResult.participantId||'data')+'.csv'; a.click(); }
@@ -851,6 +987,8 @@ window.exportAllCSV = exportAllCSV; window.loadSessions = loadSessions; window.c
 
 // ============ settings UI ============
 function refreshSettingsUI(){
+  $('tgMoney').textContent = cfg.realMoney ? CUR.on : CUR.off;
+  $('tgMoney').classList.toggle('on', cfg.realMoney);
   $('tgAdv').textContent = cfg.advanced ? CUR.on : CUR.off;
   $('tgAdv').classList.toggle('on', cfg.advanced);
   $('advBox').style.display = cfg.advanced ? '' : 'none';
@@ -869,6 +1007,7 @@ function refreshSettingsUI(){
 }
 $('gear').onclick = ()=>{ $('settings').classList.remove('hidden'); refreshSettingsUI(); };
 $('setDone').onclick = ()=>{ $('settings').classList.add('hidden'); };
+$('tgMoney').onclick = ()=>{ cfg.realMoney=!cfg.realMoney; refreshSettingsUI(); };
 $('tgAdv').onclick = ()=>{ cfg.advanced=!cfg.advanced; refreshSettingsUI(); };
 $('tgRand').onclick = ()=>{ cfg.randomize=!cfg.randomize; refreshSettingsUI(); };
 document.querySelectorAll('#advBox .opt').forEach(o=>{
@@ -892,16 +1031,37 @@ function showIntake(){
   applyStaticTexts();
   participant.id=''; participant.attempts=0;
   $('ikId').value=''; $('ikErr').textContent='';
+  const dl = LANG_NAME[eff().lang] || eff().lang;   // proficiency/AoA asked about the decision language
+  $('ikProfQ').textContent = CUR.ikProfQ(dl);
+  $('ikAoaQ').textContent = CUR.ikAoaQ(dl);
   document.querySelectorAll('.ikOpts').forEach(g=>{ delete g.dataset.sel; g.querySelectorAll('.opt').forEach(o=>o.classList.remove('active')); });
+  updateIkLangVisibility();   // hidden until L1 chosen; reveal only if decision language is foreign
   $('start').style.display='none'; $('intake').classList.remove('hidden');
 }
-document.querySelectorAll('.ikOpts .opt').forEach(o=>{ o.onclick=()=>{ const g=o.closest('.ikOpts'); g.dataset.sel=o.dataset.v; g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('active',x===o)); }; });
+document.querySelectorAll('.ikOpts .opt').forEach(o=>{ o.onclick=()=>{ const g=o.closest('.ikOpts'); g.dataset.sel=o.dataset.v; g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('active',x===o)); if(g.dataset.q==='l1') updateIkLangVisibility(); }; });
+// proficiency/AoA only matter when the decision language is FOREIGN to the participant (L1 ≠ decision language)
+function updateIkLangVisibility(){
+  const l1 = document.querySelector('.ikOpts[data-q="l1"]').dataset.sel;
+  const foreign = !!l1 && l1 !== eff().lang;
+  $('ikProfRow').style.display = foreign ? '' : 'none';
+  $('ikAoaRow').style.display = foreign ? '' : 'none';
+}
 const CORRECT={q1:'0', q2:'1'};
 $('ikBegin').onclick = ()=>{
   participant.attempts++;
   const a1=document.querySelector('.ikOpts[data-q="q1"]').dataset.sel;
   const a2=document.querySelector('.ikOpts[data-q="q2"]').dataset.sel;
   if(a1!==CORRECT.q1 || a2!==CORRECT.q2){ $('ikErr').textContent=CUR.ikErr; return; }
+  const l1=document.querySelector('.ikOpts[data-q="l1"]').dataset.sel;
+  if(!l1){ $('ikErr').textContent=CUR.ikBgErr; return; }
+  const foreign = l1 !== eff().lang;   // decision language foreign to this participant?
+  let prof=null, aoa=null;
+  if(foreign){
+    prof=document.querySelector('.ikOpts[data-q="prof"]').dataset.sel;
+    aoa=document.querySelector('.ikOpts[data-q="aoa"]').dataset.sel;
+    if(!prof || !aoa){ $('ikErr').textContent=CUR.ikBgErr; return; }
+  }
+  participant.lang = { l1, decisionLang:eff().lang, proficiency: foreign?+prof:null, aoa: foreign?+aoa:null };
   participant.id = ($('ikId').value||'').trim() || ('P'+Date.now().toString(36));
   $('intake').classList.add('hidden'); startGame();
 };
