@@ -32,6 +32,7 @@
   .startBtn:active { transform:scale(.95); }
   #gear { position:absolute; left:20px; bottom:20px; width:52px; height:52px; border-radius:50%; cursor:pointer;
     border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#eaf4f4; font-size:24px; line-height:1; }
+  #ver { position:absolute; right:16px; bottom:18px; font-size:11px; opacity:.34; color:#eaf4f4; letter-spacing:.4px; user-select:none; }
 
   /* ---------- settings ---------- */
   #settings { position:absolute; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
@@ -140,6 +141,7 @@
       <button class="startBtn" id="btnStart"></button>
     </div>
     <button id="gear" title="settings">⚙</button>
+    <div id="ver"></div>
   </div>
 
   <!-- INTAKE: participant id + comprehension check -->
@@ -625,6 +627,9 @@ function hideSay(){ bubble.classList.remove('show'); }
 function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 
 // ============ game ============
+// Version: MAJOR.MINOR. MINOR = cosmetic/wording/animation tweaks (data-compatible).
+// MAJOR = changes that affect data comparability (rounds, catch logic, estimate method, condition defs).
+const APP_VERSION = "3.0";
 const POT=100, ROUNDS=10, CATCH_OFFER=85;
 const SHEET_ENDPOINT = "";   // auto-collect OFF for now. Re-enable by pasting your /exec URL here: https://script.google.com/macros/s/AKfycbypaC37h0ZXgsqNbw75GI1bs2WwP70FhPK2XXkKhmbEO3A0n6tNuMEuUihP-NpFWm4dMA/exec
 let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
@@ -744,7 +749,7 @@ function finish(){
   const monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
   const flags=[]; if(catchPassed===false) flags.push('failed_catch'); if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals');
   const c=eff();
-  const payload={ ts:new Date().toISOString(), participantId:participant.id, uiLang:lang,
+  const payload={ ts:new Date().toISOString(), appVersion:APP_VERSION, participantId:participant.id, uiLang:lang,
     condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced},
     minAcceptable:est, pctOfPot:pct, estimateMethod:method,
     nReversals:reversals.length, reversals:reversals.slice(), monotonic, catchPassed, flags,
@@ -768,8 +773,8 @@ function submitData(p){
 }
 function csvCell(v){ const x=(v==null?'':typeof v==='object'?JSON.stringify(v):String(v)); return '"'+x.replace(/"/g,'""')+'"'; }
 function resultCSV(p){
-  const cols=['ts','participantId','uiLang','advanced','expr','body','tone','aiLang','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','comprehensionAttempts','durationMs','rounds'];
-  const row=[p.ts,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,p.comprehensionAttempts,p.durationMs,p.rounds];
+  const cols=['ts','appVersion','participantId','uiLang','advanced','expr','body','tone','aiLang','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','comprehensionAttempts','durationMs','rounds'];
+  const row=[p.ts,p.appVersion,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,p.comprehensionAttempts,p.durationMs,p.rounds];
   return cols.join(',')+'\n'+row.map(csvCell).join(',');
 }
 function copyResult(){ const t=resultCSV(window.__lastResult); if(navigator.clipboard) navigator.clipboard.writeText(t); const b=$('resCopy'),o=b.textContent; b.textContent='✓'; setTimeout(()=>b.textContent=o,1200); }
@@ -836,6 +841,7 @@ $('resDownload').onclick = downloadResult;
 $('ikBack').onclick = ()=>{ $('intake').classList.add('hidden'); $('start').classList.remove('hidden'); $('start').style.display='flex'; };
 $('btnStart').onclick = ()=>{ showIntake(); };
 
+$('ver').textContent = 'v'+APP_VERSION;
 applyStaticTexts();
 </script>
 </body>
