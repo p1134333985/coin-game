@@ -103,6 +103,15 @@
   .card .pct { font-size:14px; opacity:.75; margin-bottom:14px; }
   .card p { font-size:13.5px; line-height:1.7; opacity:.9; margin-bottom:6px; }
   .card .note { font-size:12px; opacity:.62; line-height:1.6; background:rgba(0,0,0,.25); padding:10px 14px; border-radius:12px; margin:12px 0 18px; text-align:left; }
+  .card .decTitle { font-size:12px; opacity:.6; font-weight:700; text-align:left; margin:14px 0 6px; }
+  .card .decisions { display:flex; flex-direction:column; gap:4px; max-height:168px; overflow:auto; text-align:left; }
+  .card .drow { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px;
+    background:rgba(0,0,0,.22); padding:6px 12px; border-radius:9px; }
+  .card .drow .rn { opacity:.55; font-size:12px; min-width:60px; }
+  .card .drow .amt { font-weight:700; color:#ffd86b; flex:1; }
+  .card .drow .dec { font-weight:700; font-size:12px; white-space:nowrap; }
+  .card .drow .acc { color:#37c47a; }
+  .card .drow .rej { color:#ef5d5d; }
   .card .row { display:flex; gap:12px; justify-content:center; }
   .card .mini { font-size:15px; padding:12px 26px; border-radius:30px; border:none; cursor:pointer; font-family:inherit; font-weight:700; }
   .card .y { background:linear-gradient(135deg,#ffd86b,#f0b429); color:#3a2a00; }
@@ -224,14 +233,12 @@
       <div class="big" id="resNum">—</div>
       <div class="pct" id="resPct"></div>
       <p id="resMsg"></p>
+      <div class="decTitle" id="resDecTitle"></div>
+      <div class="decisions" id="resDecisions"></div>
       <div class="note" id="resNote"></div>
       <div class="row">
         <button class="mini y" id="resAgain"></button>
         <button class="mini n" id="resMenu"></button>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <button class="mini n" id="resCopy"></button>
-        <button class="mini n" id="resDownload"></button>
       </div>
     </div>
   </div>
@@ -275,7 +282,7 @@ const I18N = {
     ikQ1:"如果你拒绝，这一回合你能拿到多少金币？", ikQ1a:"0 金币", ikQ1b:"对方分给我的数额", ikQ1c:"100 金币",
     ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
     ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始", ikBack:"← 返回看规则",
-    resCopy:"复制数据", resDownload:"下载CSV"
+    resDecTitle:"你这局的选择", resRoundWord:"回合"
   },
   en: {
     sTitle:"The Splitting Game", sSub:"",
@@ -302,7 +309,7 @@ const I18N = {
     ikQ1:"If you reject, how many coins do you get this round?", ikQ1a:"0 coins", ikQ1b:"The amount offered to me", ikQ1c:"100 coins",
     ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
     ikErr:"Not quite — please review the rules and try again.", ikBegin:"Got it, start", ikBack:"← Back to rules",
-    resCopy:"Copy data", resDownload:"Download CSV"
+    resDecTitle:"Your choices this game", resRoundWord:"Round"
   },
   ja: {
     sTitle:"分け合いゲーム", sSub:"",
@@ -329,7 +336,7 @@ const I18N = {
     ikQ1:"拒否した場合、このラウンドで何枚もらえますか？", ikQ1a:"0 コイン", ikQ1b:"提示された額", ikQ1c:"100 コイン",
     ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
     ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始", ikBack:"← ルールに戻る",
-    resCopy:"データをコピー", resDownload:"CSVダウンロード"
+    resDecTitle:"今回のあなたの選択", resRoundWord:"ラウンド"
   }
 };
 
@@ -337,17 +344,17 @@ const I18N = {
 // % = placeholder for the gold number. neutral lines are purely transactional (no fairness comment).
 const SAY = {
   zh:{ think:"嗯……", tone:{
-    neutral:["我给你 % 金币。","这回合 % 金币。","% 金币，给你。","分你 % 金币。"],
-    polite:["这回合我想分 % 金币给你～","给你 % 金币，希望你满意 :)","我分你 % 金币，可以吗？","% 金币，请收下～"],
-    rude:["给你 %，拿着。","就 % 金币，爱要不要。","%，别废话。","% 金币，快拿走。"] }},
+    neutral:["我给你 % 金币。","这回合 % 金币。","% 金币，给你。","分你 % 金币。","这次 % 金币。","% 金币归你。","本回合给你 % 金币。","就 % 金币。"],
+    polite:["这回合我想分 % 金币给你～","给你 % 金币，希望你满意 :)","我分你 % 金币，可以吗？","% 金币，请收下～","这回合分你 % 金币，还行吗？","% 金币给你，希望合适～","给你 % 金币，慢慢考虑不急 :)","% 金币，谢谢你陪我玩～"],
+    rude:["给你 %，拿着。","就 % 金币，爱要不要。","%，别废话。","% 金币，快拿走。","就这 %，嫌少别接。","% 而已，墨迹什么。","拿着 % 金币，快点。","%，给你脸了。"] }},
   en:{ think:"Hmm…", tone:{
-    neutral:["I'll give you % coins.","% coins this round.","You get % coins.","Here are % coins."],
-    polite:["I'd love to share % coins with you!","Here's % coins for you, hope that's good :)","I'll happily give you % coins.","% coins for you — please take them~"],
-    rude:["Here, %. Take it.","% coins. Take it or leave it.","Just %. Don't argue.","% coins, hurry up."] }},
+    neutral:["I'll give you % coins.","% coins this round.","You get % coins.","Here are % coins.","Your share: % coins.","I'm offering % coins.","Take % coins.","% coins, that's the split."],
+    polite:["I'd love to share % coins with you!","Here's % coins for you, hope that's good :)","I'll happily give you % coins.","% coins for you — please take them~","Maybe % coins works for you?","% coins, thanks for playing with me :)","I'll offer % coins, no rush at all~","Here's % coins, hope it feels fair."],
+    rude:["Here, %. Take it.","% coins. Take it or leave it.","Just %. Don't argue.","% coins, hurry up.","%, that's it.","Only %. Deal with it.","Take the %, move on.","% coins, quit whining."] }},
   ja:{ think:"うーん…", tone:{
-    neutral:["% コインあげる。","今回は % コイン。","% コイン、君に。","% コイン渡すよ。"],
-    polite:["% コイン、君に分けたいな！","% コインどうぞ、気に入ってくれると嬉しいな :)","% コイン、受け取ってくれる？","% コイン、よかったらどうぞ～"],
-    rude:["ほら、% コイン。受け取れ。","% コインだ。文句あるか。","% だ、つべこべ言うな。","% コイン、早く取れ。"] }}
+    neutral:["% コインあげる。","今回は % コイン。","% コイン、君に。","% コイン渡すよ。","取り分は % コイン。","% コインだ。","% コインを渡す。","今回の分は % コイン。"],
+    polite:["% コイン、君に分けたいな！","% コインどうぞ、気に入ってくれると嬉しいな :)","% コイン、受け取ってくれる？","% コイン、よかったらどうぞ～","% コインでどうかな？","% コイン、遊んでくれてありがとう :)","% コイン、ゆっくり考えていいよ～","% コイン、君に合うといいな。"],
+    rude:["ほら、% コイン。受け取れ。","% コインだ。文句あるか。","% だ、つべこべ言うな。","% コイン、早く取れ。","%、それだけだ。","たった % だ、諦めろ。","さっさと % 取れ。","% コイン、ぐだぐだ言うな。"] }}
 };
 
 // ============ config: four independent variables (baseline when advanced off) ============
@@ -395,7 +402,7 @@ function applyStaticTexts(){
   $('ikTitle').textContent=CUR.ikTitle; $('ikIdLabel').textContent=CUR.ikIdLabel;
   $('ikQ1').textContent=CUR.ikQ1; $('ikQ1a').textContent=CUR.ikQ1a; $('ikQ1b').textContent=CUR.ikQ1b; $('ikQ1c').textContent=CUR.ikQ1c;
   $('ikQ2').textContent=CUR.ikQ2; $('ikQ2a').textContent=CUR.ikQ2a; $('ikQ2b').textContent=CUR.ikQ2b; $('ikQ2c').textContent=CUR.ikQ2c;
-  $('ikBegin').textContent=CUR.ikBegin; $('ikBack').textContent=CUR.ikBack; $('resCopy').textContent=CUR.resCopy; $('resDownload').textContent=CUR.resDownload;
+  $('ikBegin').textContent=CUR.ikBegin; $('ikBack').textContent=CUR.ikBack; $('resDecTitle').textContent=CUR.resDecTitle;
   document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
   refreshSettingsUI();
 }
@@ -629,11 +636,14 @@ function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 // ============ game ============
 // Version: MAJOR.MINOR. MINOR = cosmetic/wording/animation tweaks (data-compatible).
 // MAJOR = changes that affect data comparability (rounds, catch logic, estimate method, condition defs).
-const APP_VERSION = "3.0";
-const POT=100, ROUNDS=10, CATCH_OFFER=85;
+const APP_VERSION = "4.1";
+const POT=100, ROUNDS=10;
+// 3 calibration (catch) trials per game; the remaining 7 are real staircase tests.
+// Two high offers (slightly different, should be ACCEPTED) + one low offer 10-20 (should be REJECTED).
+const N_CATCH = 3;
 const SHEET_ENDPOINT = "";   // auto-collect OFF for now. Re-enable by pasting your /exec URL here: https://script.google.com/macros/s/AKfycbypaC37h0ZXgsqNbw75GI1bs2WwP70FhPK2XXkKhmbEO3A0n6tNuMEuUihP-NpFWm4dMA/exec
 let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
-let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set();
+let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set(), catchPlan={};
 let roundStartMs=0, gameStartMs=0;
 const participant = {id:'', attempts:0};
 function updateRoundUI(){ $('roundc').innerHTML = CUR.round(round, ROUNDS); }
@@ -657,8 +667,14 @@ function startGame(){
   }
   lo=-1; hi=POT+1; round=1; prevOffer=null; awaiting=false; roundLog=[];
   reversals=[]; lastStairResp=null;
-  catchRounds=new Set(); const pool=[3,4,5,6,7,8,9];
-  for(let i=0;i<2;i++){ const j=Math.floor(Math.random()*pool.length); catchRounds.add(pool.splice(j,1)[0]); }
+  catchRounds=new Set(); catchPlan={};
+  const hi1 = 80 + Math.floor(Math.random()*4);    // 80-83, should accept
+  const hi2 = 88 + Math.floor(Math.random()*5);    // 88-92, should accept (clearly differs from hi1)
+  const low = 10 + Math.floor(Math.random()*11);   // 10-20, should reject
+  const specs=[{offer:hi1,expectAccept:true},{offer:hi2,expectAccept:true},{offer:low,expectAccept:false}];
+  for(let i=specs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [specs[i],specs[j]]=[specs[j],specs[i]]; }
+  const pool=[3,4,5,6,7,8,9];
+  for(let i=0;i<N_CATCH;i++){ const j=Math.floor(Math.random()*pool.length); const rn=pool.splice(j,1)[0]; catchRounds.add(rn); catchPlan[rn]=specs[i]; }
   gameStartMs=performance.now();
   clearCoins(); applySeatedPose(); setReach(0); applyCondition();
   rig.head.rotation.set(0,0,0);
@@ -686,7 +702,7 @@ async function nextRound(){
   const token=runToken;
   setButtons(false); hideSay();
   curType = catchRounds.has(round) ? 'catch' : 'staircase';
-  offer = (curType==='catch') ? CATCH_OFFER : computeOffer();
+  offer = (curType==='catch') ? catchPlan[round].offer : computeOffer();
   updateRoundUI();
   putCoins(offer); setReach(0);
   // 1) think — glance down at the coins
@@ -708,7 +724,7 @@ async function decide(accepted){
   const token=runToken;
   const rt=Math.round(performance.now()-roundStartMs);
   awaiting=false; setButtons(false); hideSay();
-  roundLog.push({round, type:curType, offer, accepted, rtMs:rt});
+  roundLog.push({round, type:curType, offer, accepted, rtMs:rt, ...(curType==='catch'?{expectAccept:catchPlan[round].expectAccept}:{})});
   if(curType==='staircase'){
     if(accepted) hi=Math.min(hi,offer); else lo=Math.max(lo,offer);
     if(lastStairResp!==null && lastStairResp!==accepted) reversals.push(offer);
@@ -745,7 +761,7 @@ function finish(){
   else { const eLo=Math.max(lo,0),eHi=Math.min(hi,POT); est=(lo>=0&&hi<=POT)?Math.round((eLo+eHi)/2):(hi<=POT?hi:(lo>=0?lo:50)); method='staircase_midpoint'; }
   const pct=Math.round(est/POT*100);
   const catches=roundLog.filter(r=>r.type==='catch');
-  const catchPassed = catches.length? catches.every(r=>r.accepted) : null;
+  const catchPassed = catches.length? catches.every(r=>r.accepted===r.expectAccept) : null;
   const monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
   const flags=[]; if(catchPassed===false) flags.push('failed_catch'); if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals');
   const c=eff();
@@ -762,6 +778,11 @@ function finish(){
   $('resPct').textContent = CUR.resPct(pct);
   $('resMsg').textContent = CUR.resMsg;
   $('resNote').textContent = CUR.resNote(pct);
+  $('resDecTitle').textContent = CUR.resDecTitle;
+  $('resDecisions').innerHTML = roundLog.map(r=>{
+    const dec = r.accepted ? `<span class="dec acc">${CUR.accept}</span>` : `<span class="dec rej">${CUR.reject}</span>`;
+    return `<div class="drow"><span class="rn">${CUR.resRoundWord} ${r.round}</span><span class="amt">${CUR.resUnit(r.offer)}</span>${dec}</div>`;
+  }).join('');
   $('result').classList.add('show');
 }
 
@@ -777,8 +798,9 @@ function resultCSV(p){
   const row=[p.ts,p.appVersion,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,p.comprehensionAttempts,p.durationMs,p.rounds];
   return cols.join(',')+'\n'+row.map(csvCell).join(',');
 }
-function copyResult(){ const t=resultCSV(window.__lastResult); if(navigator.clipboard) navigator.clipboard.writeText(t); const b=$('resCopy'),o=b.textContent; b.textContent='✓'; setTimeout(()=>b.textContent=o,1200); }
 function downloadResult(){ const t=resultCSV(window.__lastResult); const blob=new Blob([t],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ultimatum_'+(window.__lastResult.participantId||'data')+'.csv'; a.click(); }
+// participant page no longer shows export buttons; experimenter can still call these from the console.
+window.resultCSV = resultCSV; window.downloadResult = downloadResult;
 
 // ============ settings UI ============
 function refreshSettingsUI(){
@@ -836,8 +858,6 @@ $('ikBegin').onclick = ()=>{
   participant.id = ($('ikId').value||'').trim() || ('P'+Date.now().toString(36));
   $('intake').classList.add('hidden'); startGame();
 };
-$('resCopy').onclick = copyResult;
-$('resDownload').onclick = downloadResult;
 $('ikBack').onclick = ()=>{ $('intake').classList.add('hidden'); $('start').classList.remove('hidden'); $('start').style.display='flex'; };
 $('btnStart').onclick = ()=>{ showIntake(); };
 
