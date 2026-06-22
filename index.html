@@ -106,6 +106,18 @@
   .card .mini { font-size:15px; padding:12px 26px; border-radius:30px; border:none; cursor:pointer; font-family:inherit; font-weight:700; }
   .card .y { background:linear-gradient(135deg,#ffd86b,#f0b429); color:#3a2a00; }
   .card .n { background:rgba(255,255,255,.1); color:#eaf4f4; border:1px solid rgba(255,255,255,.25); }
+  /* intake */
+  #intake { position:absolute; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 35%, #1f4456 0%, #0b1822 75%); color:#eaf4f4; overflow:auto; padding:20px; }
+  .ikCard { width:430px; max-width:94vw; }
+  .ikCard h2 { font-size:22px; margin-bottom:16px; text-align:center; }
+  .ikField { margin-bottom:18px; }
+  .ikField label { display:block; font-size:13px; opacity:.8; margin-bottom:6px; }
+  .ikField input { width:100%; padding:11px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.07); color:#eaf4f4; font-size:15px; font-family:inherit; }
+  .ikQ { margin-bottom:16px; }
+  .ikQt { font-size:14px; font-weight:600; margin-bottom:8px; }
+  .ikOpts { display:flex; gap:8px; flex-wrap:wrap; }
+  .ikErr { color:#ff8e8e; font-size:13px; min-height:18px; margin:4px 0 8px; text-align:center; }
 </style>
 </head>
 <body>
@@ -127,6 +139,20 @@
       <button class="startBtn" id="btnStart"></button>
     </div>
     <button id="gear" title="settings">⚙</button>
+  </div>
+
+  <!-- INTAKE: participant id + comprehension check -->
+  <div id="intake" class="hidden">
+    <div class="ikCard">
+      <h2 id="ikTitle"></h2>
+      <div class="ikField"><label id="ikIdLabel"></label><input id="ikId" type="text" autocomplete="off"></div>
+      <div class="ikQ"><div class="ikQt" id="ikQ1"></div><div class="ikOpts" data-q="q1">
+        <button class="opt" data-v="0" id="ikQ1a"></button><button class="opt" data-v="1" id="ikQ1b"></button><button class="opt" data-v="2" id="ikQ1c"></button></div></div>
+      <div class="ikQ"><div class="ikQt" id="ikQ2"></div><div class="ikOpts" data-q="q2">
+        <button class="opt" data-v="0" id="ikQ2a"></button><button class="opt" data-v="1" id="ikQ2b"></button><button class="opt" data-v="2" id="ikQ2c"></button></div></div>
+      <div class="ikErr" id="ikErr"></div>
+      <button class="startBtn" id="ikBegin"></button>
+    </div>
   </div>
 
   <!-- SETTINGS -->
@@ -199,6 +225,10 @@
         <button class="mini y" id="resAgain"></button>
         <button class="mini n" id="resMenu"></button>
       </div>
+      <div class="row" style="margin-top:10px">
+        <button class="mini n" id="resCopy"></button>
+        <button class="mini n" id="resDownload"></button>
+      </div>
     </div>
   </div>
 
@@ -236,7 +266,12 @@ const I18N = {
     resTitle:"游戏结束", resUnit:f=>`${f} 金币`, resPct:p=>`约占总额的 ${p}%`,
     resMsg:"这是你这局能接受的最低金额。",
     resNote:p=>`纯理性预测「给一点就收」（底线≈0），但真实中多数人的底线在 20%–30% 左右——人们愿意花钱惩罚不公平。你的约 ${p}%。`,
-    again:"再玩一次", backMenu:"返回菜单"
+    again:"再玩一次", backMenu:"返回菜单",
+    ikTitle:"开始前", ikIdLabel:"被试编号（留空则自动生成）",
+    ikQ1:"如果你拒绝，这一回合你能拿到多少金币？", ikQ1a:"0 金币", ikQ1b:"对方分给我的数额", ikQ1c:"100 金币",
+    ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
+    ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始",
+    resCopy:"复制数据", resDownload:"下载CSV"
   },
   en: {
     sTitle:"The Splitting Game", sSub:"",
@@ -258,7 +293,12 @@ const I18N = {
     resTitle:"Game Over", resUnit:f=>`${f} coins`, resPct:p=>`about ${p}% of the total`,
     resMsg:"That's the lowest amount you'd accept this game.",
     resNote:p=>`Rationality predicts accepting even a coin (floor ≈ 0), but most people's floor sits around 20–30% — people pay to punish unfairness. Yours is about ${p}%.`,
-    again:"Play Again", backMenu:"Main Menu"
+    again:"Play Again", backMenu:"Main Menu",
+    ikTitle:"Before we start", ikIdLabel:"Participant ID (blank = auto)",
+    ikQ1:"If you reject, how many coins do you get this round?", ikQ1a:"0 coins", ikQ1b:"The amount offered to me", ikQ1c:"100 coins",
+    ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
+    ikErr:"Not quite \u2014 please review the rules and try again.", ikBegin:"Got it, start",
+    resCopy:"Copy data", resDownload:"Download CSV"
   },
   ja: {
     sTitle:"分け合いゲーム", sSub:"",
@@ -280,7 +320,12 @@ const I18N = {
     resTitle:"ゲーム終了", resUnit:f=>`${f} コイン`, resPct:p=>`全体の約 ${p}%`,
     resMsg:"これが今回あなたが受け入れられる最低額です。",
     resNote:p=>`合理性は1枚でも受け入れるべき（下限≈0）と予測しますが、実際は多くの人の下限は20〜30%程度——人は不公平を罰するためにお金を払います。あなたは約 ${p}%。`,
-    again:"もう一度", backMenu:"メニューへ"
+    again:"もう一度", backMenu:"メニューへ",
+    ikTitle:"始める前に", ikIdLabel:"被験者ID（空欄で自動生成）",
+    ikQ1:"拒否した場合、このラウンドで何枚もらえますか？", ikQ1a:"0 コイン", ikQ1b:"提示された額", ikQ1c:"100 コイン",
+    ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
+    ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始",
+    resCopy:"データをコピー", resDownload:"CSVダウンロード"
   }
 };
 
@@ -343,6 +388,10 @@ function applyStaticTexts(){
   $('resTitle').textContent = CUR.resTitle;
   $('resAgain').textContent = CUR.again;
   $('resMenu').textContent = CUR.backMenu;
+  $('ikTitle').textContent=CUR.ikTitle; $('ikIdLabel').textContent=CUR.ikIdLabel;
+  $('ikQ1').textContent=CUR.ikQ1; $('ikQ1a').textContent=CUR.ikQ1a; $('ikQ1b').textContent=CUR.ikQ1b; $('ikQ1c').textContent=CUR.ikQ1c;
+  $('ikQ2').textContent=CUR.ikQ2; $('ikQ2a').textContent=CUR.ikQ2a; $('ikQ2b').textContent=CUR.ikQ2b; $('ikQ2c').textContent=CUR.ikQ2c;
+  $('ikBegin').textContent=CUR.ikBegin; $('resCopy').textContent=CUR.resCopy; $('resDownload').textContent=CUR.resDownload;
   document.querySelectorAll('.lang').forEach(b=>b.classList.toggle('active', b.dataset.l===lang));
   refreshSettingsUI();
 }
@@ -404,7 +453,6 @@ function makeMannequin(){
   torso.add(ball(0.16));                                  // prominent waist joint
   const belly=new THREE.Mesh(new THREE.SphereGeometry(0.24,22,16),woodMat); belly.scale.set(1.02,0.92,0.78); belly.position.y=0.3; belly.castShadow=true; torso.add(belly);
   const chest=new THREE.Mesh(new THREE.SphereGeometry(0.31,26,20),woodMat); chest.scale.set(1.3,1.02,0.78); chest.position.y=0.66; chest.castShadow=true; torso.add(chest);
-  const collar=new THREE.Mesh(new THREE.CylinderGeometry(0.07,0.07,0.5,12),woodMat); collar.rotation.z=Math.PI/2; collar.position.y=0.86; collar.castShadow=true; torso.add(collar);
   const neck=new THREE.Group(); neck.position.y=0.92; torso.add(neck);
   neck.add(new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.095,0.16,12),woodMat));
   neck.add(ball(0.1));
@@ -575,8 +623,12 @@ function hideSay(){ bubble.classList.remove('show'); }
 function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
 
 // ============ game ============
-const POT=100, ROUNDS=10;
+const POT=100, ROUNDS=10, CATCH_OFFER=85;
+const SHEET_ENDPOINT = "";   // <-- paste your Google Apps Script Web App URL here to auto-collect data
 let lo, hi, round, offer, prevOffer, awaiting, runToken=0, roundLog=[];
+let curType='staircase', reversals=[], lastStairResp=null, catchRounds=new Set();
+let roundStartMs=0, gameStartMs=0;
+const participant = {id:'', attempts:0};
 function updateRoundUI(){ $('roundc').innerHTML = CUR.round(round, ROUNDS); }
 function computeOffer(){
   const eLo=Math.max(lo,0), eHi=Math.min(hi,POT);
@@ -597,6 +649,10 @@ function startGame(){
     console.log('[ultimatum] randomized condition:', cfg.expr, cfg.body, cfg.tone, '| lang', cfg.aiLang||lang);
   }
   lo=-1; hi=POT+1; round=1; prevOffer=null; awaiting=false; roundLog=[];
+  reversals=[]; lastStairResp=null;
+  catchRounds=new Set(); const pool=[3,4,5,6,7,8,9];
+  for(let i=0;i<2;i++){ const j=Math.floor(Math.random()*pool.length); catchRounds.add(pool.splice(j,1)[0]); }
+  gameStartMs=performance.now();
   clearCoins(); applySeatedPose(); setReach(0); applyCondition();
   rig.head.rotation.set(0,0,0);
   $('result').classList.remove('show');
@@ -608,7 +664,7 @@ function backToMenu(){
   runToken++; awaiting=false; setButtons(false);
   hideSay(); think.classList.remove('show'); clearCoins(); setReach(0); rig.head.rotation.set(0,0,0);
   $('hud').classList.remove('show'); $('bottomBar').classList.remove('show'); $('menuBtn').classList.remove('show');
-  $('confirm').classList.remove('show'); $('result').classList.remove('show');
+  $('confirm').classList.remove('show'); $('result').classList.remove('show'); $('intake').classList.add('hidden');
   $('start').classList.remove('hidden'); $('start').style.display='flex';
 }
 
@@ -622,7 +678,9 @@ async function reachAnim(){
 async function nextRound(){
   const token=runToken;
   setButtons(false); hideSay();
-  offer=computeOffer(); updateRoundUI();
+  curType = catchRounds.has(round) ? 'catch' : 'staircase';
+  offer = (curType==='catch') ? CATCH_OFFER : computeOffer();
+  updateRoundUI();
   putCoins(offer); setReach(0);
   // 1) think — glance down at the coins
   think.classList.add('show'); think.textContent = aiThink();
@@ -634,30 +692,35 @@ async function nextRound(){
   say(aiLine(offer));
   await reachAnim();
   if(token!==runToken) return;
+  roundStartMs=performance.now();
   awaiting=true; setButtons(true);
 }
 
 async function decide(accepted){
   if(!awaiting) return;
   const token=runToken;
+  const rt=Math.round(performance.now()-roundStartMs);
   awaiting=false; setButtons(false); hideSay();
-  roundLog.push({round, offer, accepted});
+  roundLog.push({round, type:curType, offer, accepted, rtMs:rt});
+  if(curType==='staircase'){
+    if(accepted) hi=Math.min(hi,offer); else lo=Math.max(lo,offer);
+    if(lastStairResp!==null && lastStairResp!==accepted) reversals.push(offer);
+    lastStairResp=accepted; prevOffer=offer;
+  }
   const c=eff();
   if(accepted){
-    hi=Math.min(hi,offer);
     if(c.expr==='friendly') await nod();
     if(offerCoins){ scene.attach(offerCoins);
       const s=offerCoins.position.clone(), e=new THREE.Vector3(0,1.7,2.3);
       await anim(.5,p=>{ offerCoins.position.lerpVectors(s,e,easeOut(p)); offerCoins.scale.setScalar(0.8-0.5*p); offerCoins.rotation.y+=0.25; },easeOut);
     }
   } else {
-    lo=Math.max(lo,offer);
     if(c.expr==='hostile') await headShake();
     await anim(.4,p=>{ setReach(1-p); if(offerCoins) offerCoins.scale.setScalar(0.8*(1-0.7*p)); });
   }
   if(token!==runToken) return;
   await anim(.3,p=>setReach(1-p));
-  clearCoins(); prevOffer=offer;
+  clearCoins();
   if(token!==runToken) return;
   if(round>=ROUNDS){ finish(); return; }
   round++; await wait(320); if(token!==runToken) return;
@@ -666,18 +729,49 @@ async function decide(accepted){
 
 function finish(){
   setButtons(false); hideSay();
-  const eLo=Math.max(lo,0), eHi=Math.min(hi,POT);
-  const est = (lo>=0 && hi<=POT) ? Math.round((eLo+eHi)/2) : (hi<=POT?hi:(lo>=0?lo:50));
-  const pct = Math.round(est/POT*100);
+  const stair=roundLog.filter(r=>r.type==='staircase');
+  const acc=stair.filter(r=>r.accepted).map(r=>r.offer);
+  const rej=stair.filter(r=>!r.accepted).map(r=>r.offer);
+  const minAcc=acc.length?Math.min.apply(null,acc):null, maxRej=rej.length?Math.max.apply(null,rej):null;
+  let est, method;
+  if(reversals.length>=2){ const rr=reversals.length>=3?reversals.slice(1):reversals; est=Math.round(rr.reduce((a,b)=>a+b,0)/rr.length); method='reversal_mean'; }
+  else { const eLo=Math.max(lo,0),eHi=Math.min(hi,POT); est=(lo>=0&&hi<=POT)?Math.round((eLo+eHi)/2):(hi<=POT?hi:(lo>=0?lo:50)); method='staircase_midpoint'; }
+  const pct=Math.round(est/POT*100);
+  const catches=roundLog.filter(r=>r.type==='catch');
+  const catchPassed = catches.length? catches.every(r=>r.accepted) : null;
+  const monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
+  const flags=[]; if(catchPassed===false) flags.push('failed_catch'); if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals');
   const c=eff();
-  window.__lastResult = {minAcceptable:est, pctOfPot:pct, condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced}, rounds:roundLog.slice()};
-  console.log('[ultimatum] min acceptable ≈', est, '('+pct+'%) | condition', window.__lastResult.condition);
+  const payload={ ts:new Date().toISOString(), participantId:participant.id, uiLang:lang,
+    condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced},
+    minAcceptable:est, pctOfPot:pct, estimateMethod:method,
+    nReversals:reversals.length, reversals:reversals.slice(), monotonic, catchPassed, flags,
+    minAccepted:minAcc, maxRejected:maxRej, comprehensionAttempts:participant.attempts,
+    durationMs:Math.round(performance.now()-gameStartMs), rounds:roundLog.slice() };
+  window.__lastResult=payload;
+  console.log('[ultimatum] result', payload);
+  submitData(payload);
   $('resNum').textContent = CUR.resUnit(est);
   $('resPct').textContent = CUR.resPct(pct);
   $('resMsg').textContent = CUR.resMsg;
   $('resNote').textContent = CUR.resNote(pct);
   $('result').classList.add('show');
 }
+
+// ---- data submit + export ----
+function submitData(p){
+  if(!SHEET_ENDPOINT) return;
+  try{ fetch(SHEET_ENDPOINT, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(p)}); }
+  catch(e){ console.warn('[ultimatum] submit failed', e); }
+}
+function csvCell(v){ const x=(v==null?'':typeof v==='object'?JSON.stringify(v):String(v)); return '"'+x.replace(/"/g,'""')+'"'; }
+function resultCSV(p){
+  const cols=['ts','participantId','uiLang','advanced','expr','body','tone','aiLang','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','comprehensionAttempts','durationMs','rounds'];
+  const row=[p.ts,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,p.comprehensionAttempts,p.durationMs,p.rounds];
+  return cols.join(',')+'\n'+row.map(csvCell).join(',');
+}
+function copyResult(){ const t=resultCSV(window.__lastResult); if(navigator.clipboard) navigator.clipboard.writeText(t); const b=$('resCopy'),o=b.textContent; b.textContent='✓'; setTimeout(()=>b.textContent=o,1200); }
+function downloadResult(){ const t=resultCSV(window.__lastResult); const blob=new Blob([t],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ultimatum_'+(window.__lastResult.participantId||'data')+'.csv'; a.click(); }
 
 // ============ settings UI ============
 function refreshSettingsUI(){
@@ -718,7 +812,26 @@ $('confNo').onclick = ()=>{ $('confirm').classList.remove('show'); };
 $('confYes').onclick = ()=>{ backToMenu(); };
 $('resAgain').onclick = ()=>{ startGame(); };
 $('resMenu').onclick = ()=>{ backToMenu(); };
-$('btnStart').onclick = ()=>{ applyStaticTexts(); $('start').style.display='none'; startGame(); };
+function showIntake(){
+  applyStaticTexts();
+  participant.id=''; participant.attempts=0;
+  $('ikId').value=''; $('ikErr').textContent='';
+  document.querySelectorAll('.ikOpts').forEach(g=>{ delete g.dataset.sel; g.querySelectorAll('.opt').forEach(o=>o.classList.remove('active')); });
+  $('start').style.display='none'; $('intake').classList.remove('hidden');
+}
+document.querySelectorAll('.ikOpts .opt').forEach(o=>{ o.onclick=()=>{ const g=o.closest('.ikOpts'); g.dataset.sel=o.dataset.v; g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('active',x===o)); }; });
+const CORRECT={q1:'0', q2:'1'};
+$('ikBegin').onclick = ()=>{
+  participant.attempts++;
+  const a1=document.querySelector('.ikOpts[data-q="q1"]').dataset.sel;
+  const a2=document.querySelector('.ikOpts[data-q="q2"]').dataset.sel;
+  if(a1!==CORRECT.q1 || a2!==CORRECT.q2){ $('ikErr').textContent=CUR.ikErr; return; }
+  participant.id = ($('ikId').value||'').trim() || ('P'+Date.now().toString(36));
+  $('intake').classList.add('hidden'); startGame();
+};
+$('resCopy').onclick = copyResult;
+$('resDownload').onclick = downloadResult;
+$('btnStart').onclick = ()=>{ showIntake(); };
 
 applyStaticTexts();
 </script>
