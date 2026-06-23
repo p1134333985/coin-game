@@ -33,6 +33,14 @@
   #gear { position:absolute; left:20px; bottom:20px; width:52px; height:52px; border-radius:50%; cursor:pointer;
     border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#eaf4f4; font-size:24px; line-height:1; }
   #ver { position:absolute; right:16px; bottom:18px; font-size:11px; opacity:.34; color:#eaf4f4; letter-spacing:.4px; user-select:none; }
+  #aboutBtn { position:absolute; right:18px; top:18px; padding:7px 16px; border-radius:20px; cursor:pointer;
+    border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.08); color:#eaf4f4; font-size:13px; font-family:inherit; }
+  #about .card { max-height:88vh; overflow:auto; text-align:left; }
+  #about .card h2 { text-align:center; }
+  .aboutBody { font-size:14px; line-height:1.65; color:#cfe0ee; margin:6px 0 16px; }
+  .aboutBody p { margin:0 0 12px; }
+  .aboutBody b { color:#eaf4f4; }
+  .aboutBody .credit { font-size:12px; opacity:.6; border-top:1px solid rgba(255,255,255,.12); padding-top:12px; margin-top:4px; }
 
   /* ---------- settings ---------- */
   #settings { position:absolute; inset:0; z-index:50; display:flex; align-items:center; justify-content:center;
@@ -89,6 +97,13 @@
   .btn:disabled { opacity:.35; cursor:not-allowed; }
   .accept { background:linear-gradient(135deg,#37c47a,#1d9e58); }
   .reject { background:linear-gradient(135deg,#ef5d5d,#c93838); }
+  #sliderBox { pointer-events:auto; width:min(560px,86vw); text-align:center; color:#eaf4f4;
+    background:rgba(10,18,26,.78); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:16px 22px 18px; }
+  #sliderBox.hidden { display:none; }
+  #sliderBox .maoPrompt { font-size:14px; opacity:.85; margin-bottom:6px; }
+  #sliderBox .maoVal { font-size:26px; font-weight:800; color:#ffd86b; margin-bottom:8px; }
+  #sliderBox input[type=range] { width:100%; margin:6px 0 16px; accent-color:#ffd86b; cursor:pointer; }
+  #sliderBox .startBtn { padding:12px 34px; font-size:16px; }
   #menuBtn { position:absolute; right:14px; bottom:98px; z-index:25; pointer-events:auto; display:none;
     border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.42); color:#eaf4f4; cursor:pointer;
     padding:10px 16px; border-radius:22px; font-size:13px; font-family:inherit; }
@@ -142,6 +157,9 @@
   .ikField input { width:100%; padding:11px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.07); color:#eaf4f4; font-size:15px; font-family:inherit; }
   .ikQ { margin-bottom:16px; }
   .ikQt { font-size:14px; font-weight:600; margin-bottom:8px; }
+  .ikIntro { font-size:14px; opacity:.82; line-height:1.55; margin:2px 0 16px; }
+  #ikExpRow .ikExpVal { font-size:20px; font-weight:800; color:#ffd86b; margin:2px 0 4px; }
+  #ikExpRow input[type=range] { width:100%; accent-color:#ffd86b; cursor:pointer; }
   .ikOpts { display:flex; gap:8px; flex-wrap:wrap; }
   .ikErr { color:#ff8e8e; font-size:13px; min-height:18px; margin:4px 0 8px; text-align:center; }
   .ikBack { display:block; margin:14px auto 0; background:none; border:none; color:#a8c4c4; font-size:13px; cursor:pointer; font-family:inherit; text-decoration:underline; }
@@ -166,6 +184,7 @@
       <button class="startBtn" id="btnStart"></button>
     </div>
     <button id="gear" title="settings">⚙</button>
+    <button id="aboutBtn"></button>
     <div id="ver"></div>
   </div>
 
@@ -173,7 +192,7 @@
   <div id="intake" class="hidden">
     <div class="ikCard">
       <h2 id="ikTitle"></h2>
-      <div class="ikField"><label id="ikIdLabel"></label><input id="ikId" type="text" autocomplete="off"></div>
+      <div class="ikIntro" id="ikComprehIntro"></div>
       <div class="ikQ"><div class="ikQt" id="ikQ1"></div><div class="ikOpts" data-q="q1">
         <button class="opt" data-v="0" id="ikQ1a"></button><button class="opt" data-v="1" id="ikQ1b"></button><button class="opt" data-v="2" id="ikQ1c"></button></div></div>
       <div class="ikQ"><div class="ikQt" id="ikQ2"></div><div class="ikOpts" data-q="q2">
@@ -184,6 +203,8 @@
         <button class="opt" data-v="1" id="ikProf1"></button><button class="opt" data-v="2" id="ikProf2"></button><button class="opt" data-v="3" id="ikProf3"></button><button class="opt" data-v="4" id="ikProf4"></button><button class="opt" data-v="5" id="ikProf5"></button></div></div>
       <div class="ikQ" id="ikAoaRow"><div class="ikQt" id="ikAoaQ"></div><div class="ikOpts" data-q="aoa">
         <button class="opt" data-v="1" id="ikAoa1"></button><button class="opt" data-v="2" id="ikAoa2"></button><button class="opt" data-v="3" id="ikAoa3"></button><button class="opt" data-v="4" id="ikAoa4"></button></div></div>
+      <div class="ikField" id="ikExpRow"><label id="ikExpLabel"></label><div class="ikExpVal" id="ikExpVal">—</div><input type="range" id="ikExpSlider" min="0" max="100" value="50"></div>
+      <div class="ikField" style="margin-top:6px"><label id="ikIdLabel"></label><input id="ikId" type="text" autocomplete="off"></div>
       <div class="ikErr" id="ikErr"></div>
       <button class="startBtn" id="ikBegin"></button>
       <button id="ikBack" class="ikBack"></button>
@@ -195,6 +216,8 @@
     <div class="sCard">
       <h2 id="setTitle"></h2>
       <div class="note" id="setNote"></div>
+      <div class="sRow"><div class="lab"><span id="setMode"></span><button class="toggle" id="tgMode"></button></div></div>
+      <div class="note" id="setModeNote" style="margin-top:-6px"></div>
       <div class="sRow"><div class="lab"><span id="setMoney"></span><button class="toggle" id="tgMoney"></button></div></div>
       <div class="note" id="setMoneyNote" style="margin-top:-6px"></div>
       <div class="sRow"><div class="lab"><span id="setAdv"></span><button class="toggle" id="tgAdv"></button></div></div>
@@ -219,6 +242,10 @@
             <button class="opt" data-v="zh">中文</button>
             <button class="opt" data-v="en">English</button>
             <button class="opt" data-v="ja">日本語</button></div></div>
+        <div class="sRow"><div class="lab"><span id="lblOpp"></span></div>
+          <div class="opts" data-grp="opponent">
+            <button class="opt" data-v="none" id="oppNone"></button>
+            <button class="opt" data-v="computer" id="oppComputer"></button></div></div>
         <div class="sRow"><div class="lab"><span id="lblRand"></span><button class="toggle" id="tgRand"></button></div></div>
       </div>
       <button class="startBtn sDone" id="setDone"></button>
@@ -238,8 +265,22 @@
       <button class="btn accept" id="btnAccept" disabled></button>
       <button class="btn reject" id="btnReject" disabled></button>
     </div>
+    <div id="sliderBox" class="hidden">
+      <div class="maoPrompt" id="maoPrompt"></div>
+      <div class="maoVal" id="maoVal">—</div>
+      <input type="range" id="maoSlider" min="0" max="100" value="50">
+      <button class="startBtn" id="btnMao"></button>
+    </div>
   </div>
   <button id="menuBtn"></button>
+
+  <div class="overlay" id="about">
+    <div class="card">
+      <h2 id="aboutTitle"></h2>
+      <div class="aboutBody" id="aboutBody"></div>
+      <button class="startBtn sDone" id="aboutClose"></button>
+    </div>
+  </div>
 
   <div class="overlay" id="confirm">
     <div class="card">
@@ -310,12 +351,15 @@ const I18N = {
     bodyF:"前倾", bodyN:"中立", bodyB:"后仰·推",
     toneP:"礼貌", toneN:"中性", toneR:"粗鲁",
     lblRand:"随机条件并记录",
+    lblOpp:"对手身份", oppNone:"不说明", oppHuman:"真人", oppComputer:"电脑",
+    oppFrameHuman:"对方是另一名真实玩家。", oppFrameComputer:"对方是电脑程序。",
+    ikExpLabel:"开始前先猜猜：你觉得对方大概会分给你多少？",
     setDone:"完成",
     resTitle:"游戏结束", resUnit:f=>`${f} 金币`, resPct:p=>`约占总额的 ${p}%`,
     resMsg:"这是你这局能接受的最低金额。",
     resNote:p=>`纯理性预测「给一点就收」（底线≈0），但真实中多数人的底线在 20%–30% 左右——人们愿意花钱惩罚不公平。你的约 ${p}%。`,
     again:"再玩一次", backMenu:"返回菜单",
-    ikTitle:"开始前", ikIdLabel:"被试编号（留空则自动生成）",
+    ikTitle:"开始前", ikIdLabel:"被试编号（留空则自动生成）", ikComprehIntro:"先让我考考你，有没有记住游戏规则：",
     ikQ1:"如果你拒绝，这一回合你能拿到多少金币？", ikQ1a:"0 金币", ikQ1b:"对方分给我的数额", ikQ1c:"100 金币",
     ikQ2:"对方一共有多少金币可以分？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"随机",
     ikErr:"答案不对，请再看一遍规则后重试。", ikBegin:"明白了，开始", ikBack:"← 返回看规则",
@@ -333,7 +377,12 @@ const I18N = {
     svPolite:{q:"对方说话的语气？", lo:"很无礼", hi:"很有礼貌"},
     svFair:{q:"总体来说，对方的出价公平吗？", lo:"很不公平", hi:"很公平"},
     svAnger:{q:"对方的出价让你多生气／不爽？", lo:"完全不会", hi:"非常生气"},
-    svMind:{q:"对方在你眼中，多像一个有想法、有感受的人？", lo:"完全不像", hi:"非常像"}
+    svMind:{q:"对方在你眼中，多像一个有想法、有感受的人？", lo:"完全不像", hi:"非常像"},
+    setMode:"单回合（滑动条）", modeNote:"开=单次决策，直接拉滑块设定能接受的最低金额（策略法，纯偏好测量）。关=10回合动态阶梯。",
+    maoPrompt:"拉动滑块，设定你能接受的最低金额：", btnMao:"确认提交",
+    resSingleOutcome:(o,acc)=>`对方实际出价 ${o} → ${acc?'达到你的底线，成交':'低于你的底线，拒绝'}`,
+    aboutBtn:"说明", aboutTitle:"关于本游戏", aboutClose:"关闭", aboutAuthor:"作者",
+    aboutBody:"<p><b>这是什么？</b><br>一个 3D「分钱游戏」，用于行为经济学中关于<b>讨价还价与公平决策</b>的研究。对方（电脑）每次提出如何分配 100 枚金币，你只需决定接受或拒绝；拒绝则两人都拿不到。</p><p><b>两种模式</b><br>· <b>单回合</b>：只做一次决策，用滑块直接设定你能接受的最低金额（策略法），反映纯粹的公平偏好。<br>· <b>10 回合</b>：用自适应阶梯（2-down / 1-up）逐步逼近你的最低接受金额。</p><p><b>测量</b><br>最低接受金额（MAO）＝你愿意接受的最小分配额。先行研究中通常在总额的 20–30% 左右。</p>"
   },
   en: {
     sTitle:"The Splitting Game", sSub:"",
@@ -351,12 +400,15 @@ const I18N = {
     bodyF:"Lean in", bodyN:"Neutral", bodyB:"Lean back · shove",
     toneP:"Polite", toneN:"Neutral", toneR:"Rude",
     lblRand:"Randomize & log condition",
+    lblOpp:"Opponent", oppNone:"Unstated", oppHuman:"A person", oppComputer:"Computer",
+    oppFrameHuman:"The other player is another real person.", oppFrameComputer:"The other player is a computer program.",
+    ikExpLabel:"Before you start, a guess: how much do you think the other player will give you?",
     setDone:"Done",
     resTitle:"Game Over", resUnit:f=>`${f} coins`, resPct:p=>`about ${p}% of the total`,
     resMsg:"That's the lowest amount you'd accept this game.",
     resNote:p=>`Rationality predicts accepting even a coin (floor ≈ 0), but most people's floor sits around 20–30% — people pay to punish unfairness. Yours is about ${p}%.`,
     again:"Play Again", backMenu:"Main Menu",
-    ikTitle:"Before we start", ikIdLabel:"Participant ID (blank = auto)",
+    ikTitle:"Before we start", ikIdLabel:"Participant ID (blank = auto)", ikComprehIntro:"First, let's check that you remember the rules:",
     ikQ1:"If you reject, how many coins do you get this round?", ikQ1a:"0 coins", ikQ1b:"The amount offered to me", ikQ1c:"100 coins",
     ikQ2:"How many coins does the other player have to split?", ikQ2a:"50", ikQ2b:"100", ikQ2c:"Random",
     ikErr:"Not quite — please review the rules and try again.", ikBegin:"Got it, start", ikBack:"← Back to rules",
@@ -374,7 +426,12 @@ const I18N = {
     svPolite:{q:"The other player's tone was…", lo:"very rude", hi:"very polite"},
     svFair:{q:"Overall, were the offers fair?", lo:"very unfair", hi:"very fair"},
     svAnger:{q:"How angry / annoyed did the offers make you?", lo:"not at all", hi:"very angry"},
-    svMind:{q:"How much did the other player seem like someone with thoughts and feelings?", lo:"not at all", hi:"very much"}
+    svMind:{q:"How much did the other player seem like someone with thoughts and feelings?", lo:"not at all", hi:"very much"},
+    setMode:"Single round (slider)", modeNote:"On = one-shot decision; drag the slider to set your minimum acceptable amount (strategy method, pure preference). Off = 10-round adaptive staircase.",
+    maoPrompt:"Drag the slider to set the least you'd accept:", btnMao:"Confirm",
+    resSingleOutcome:(o,acc)=>`Their actual offer was ${o} → ${acc?'at or above your minimum: deal':'below your minimum: rejected'}`,
+    aboutBtn:"About", aboutTitle:"About this game", aboutClose:"Close", aboutAuthor:"Author",
+    aboutBody:"<p><b>What is this?</b><br>A 3D \"splitting game\" for behavioral-economics research on <b>bargaining and fairness</b>. The other player (a computer) proposes how to split 100 coins each round; you simply accept or reject — reject and neither side gets anything.</p><p><b>Two modes</b><br>· <b>Single round</b>: one decision — set the least you'd accept on a slider (the strategy method), reflecting pure fairness preferences.<br>· <b>10 rounds</b>: an adaptive staircase (2-down / 1-up) homes in on your minimum acceptable offer.</p><p><b>Measure</b><br>Minimum acceptable offer (MAO) = the smallest split you'll accept. Prior research finds it around 20–30% of the total.</p>"
   },
   ja: {
     sTitle:"分け合いゲーム", sSub:"",
@@ -392,12 +449,15 @@ const I18N = {
     bodyF:"前傾", bodyN:"中立", bodyB:"後傾・押す",
     toneP:"丁寧", toneN:"中立", toneR:"乱暴",
     lblRand:"条件をランダム化して記録",
+    lblOpp:"相手の正体", oppNone:"伏せる", oppHuman:"実在の人", oppComputer:"コンピュータ",
+    oppFrameHuman:"相手は別の実在のプレイヤーです。", oppFrameComputer:"相手はコンピュータ・プログラムです。",
+    ikExpLabel:"始める前に予想：相手はいくらくらい分けてくれると思う？",
     setDone:"完了",
     resTitle:"ゲーム終了", resUnit:f=>`${f} コイン`, resPct:p=>`全体の約 ${p}%`,
     resMsg:"これが今回あなたが受け入れられる最低額です。",
     resNote:p=>`合理性は1枚でも受け入れるべき（下限≈0）と予測しますが、実際は多くの人の下限は20〜30%程度——人は不公平を罰するためにお金を払います。あなたは約 ${p}%。`,
     again:"もう一度", backMenu:"メニューへ",
-    ikTitle:"始める前に", ikIdLabel:"被験者ID（空欄で自動生成）",
+    ikTitle:"始める前に", ikIdLabel:"被験者ID（空欄で自動生成）", ikComprehIntro:"まず、ルールを覚えているか確認させてね：",
     ikQ1:"拒否した場合、このラウンドで何枚もらえますか？", ikQ1a:"0 コイン", ikQ1b:"提示された額", ikQ1c:"100 コイン",
     ikQ2:"相手は何枚のコインを分けられますか？", ikQ2a:"50", ikQ2b:"100", ikQ2c:"ランダム",
     ikErr:"違います。ルールを読み直してもう一度。", ikBegin:"了解、開始", ikBack:"← ルールに戻る",
@@ -415,29 +475,34 @@ const I18N = {
     svPolite:{q:"相手の話し方の口調は？", lo:"とても無礼", hi:"とても丁寧"},
     svFair:{q:"全体として、相手の提示は公平でしたか？", lo:"とても不公平", hi:"とても公平"},
     svAnger:{q:"相手の提示にどれくらい腹が立ちましたか？", lo:"全く", hi:"とても"},
-    svMind:{q:"相手は「考えや感情を持つ人」にどれくらい見えましたか？", lo:"全く見えない", hi:"とても見える"}
+    svMind:{q:"相手は「考えや感情を持つ人」にどれくらい見えましたか？", lo:"全く見えない", hi:"とても見える"},
+    setMode:"1ラウンド（スライダー）", modeNote:"オン＝1回限りの決定。スライダーで受け入れ可能な最低額を直接設定（戦略法・純粋な選好測定）。オフ＝10ラウンドの適応型ステアケース。",
+    maoPrompt:"スライダーで、受け入れられる最低額を設定：", btnMao:"確定",
+    resSingleOutcome:(o,acc)=>`相手の提示は ${o} → ${acc?'最低額以上：成立':'最低額未満：拒否'}`,
+    aboutBtn:"について", aboutTitle:"このゲームについて", aboutClose:"閉じる", aboutAuthor:"著者",
+    aboutBody:"<p><b>これは？</b><br>行動経済学の<b>交渉と公平性</b>に関する研究用の3D「分けっこゲーム」。相手（コンピュータ）が毎回100コインの分け方を提示し、あなたは受け入れるか拒否するかを選ぶだけ。拒否すると二人とも何ももらえません。</p><p><b>2つのモード</b><br>・<b>1ラウンド</b>：1回の決定。スライダーで受け入れ可能な最低額を設定（戦略法）し、純粋な公平選好を測定。<br>・<b>10ラウンド</b>：適応型ステアケース（2-down / 1-up）で最低受入額を推定。</p><p><b>測定</b><br>最低受入額（MAO）＝受け入れられる最小の分配。先行研究では総額の20〜30%程度。</p>"
   }
 };
 
 // ============ AI lines: per language, per verbal tone (randomized variants) ============
 // % = placeholder for the gold number. neutral lines are purely transactional (no fairness comment).
 const SAY = {
-  zh:{ think:"嗯……", tone:{
+  zh:{ think:"嗯……", ask:{neutral:"你最低能接受多少？",polite:"你最低能接受多少呢？希望我们都满意～",rude:"你最低要多少？说吧，别磨叽。"}, tone:{
     neutral:["我给你 %。","这回合 %。","%，给你。","分你 %。","这次 %。","% 归你。","本回合给你 %。","就 %。"],
     polite:["这回合我想分 % 给你～","给你 %，希望你满意 :)","我分你 %，可以吗？","%，请收下～","这回合分你 %，还行吗？","% 给你，希望合适～","给你 %，慢慢考虑不急 :)","%，谢谢你陪我玩～"],
     rude:["给你 %，拿着。","就 %，爱要不要。","%，别废话。","%，快拿走。","就这 %，嫌少别接。","% 而已，墨迹什么。","拿着 %，快点。","%，给你脸了。"] }},
-  en:{ think:"Hmm…", tone:{
+  en:{ think:"Hmm…", ask:{neutral:"What's the least you'd accept?",polite:"What's the least you'd be happy to accept?",rude:"What's the least you'll take? Out with it."}, tone:{
     neutral:["I'll give you %.","% this round.","You get %.","Here's %.","Your share: %.","I'm offering %.","Take %.","%, that's the split."],
     polite:["I'd love to share % with you!","Here's % for you, hope that's good :)","I'll happily give you %.","% for you — please take it~","Maybe % works for you?","%, thanks for playing with me :)","I'll offer %, no rush at all~","Here's %, hope it feels fair."],
     rude:["Here, %. Take it.","%. Take it or leave it.","Just %. Don't argue.","%, hurry up.","%, that's it.","Only %. Deal with it.","Take the %, move on.","%, quit whining."] }},
-  ja:{ think:"うーん…", tone:{
+  ja:{ think:"うーん…", ask:{neutral:"最低いくらなら受け入れる？",polite:"最低いくらなら受け取ってくれるかな？",rude:"最低いくら欲しい？さっさと言え。"}, tone:{
     neutral:["% あげる。","今回は %。","%、君に。","% 渡すよ。","取り分は %。","% だ。","% を渡す。","今回の分は %。"],
     polite:["%、君に分けたいな！","% どうぞ、気に入ってくれると嬉しいな :)","%、受け取ってくれる？","%、よかったらどうぞ～","% でどうかな？","%、遊んでくれてありがとう :)","%、ゆっくり考えていいよ～","%、君に合うといいな。"],
     rude:["ほら、%。受け取れ。","% だ。文句あるか。","% だ、つべこべ言うな。","%、早く取れ。","%、それだけだ。","たった % だ、諦めろ。","さっさと % 取れ。","%、ぐだぐだ言うな。"] }}
 };
 
 // ============ config: four independent variables (baseline when advanced off) ============
-const cfg = { advanced:false, expr:'neutral', body:'neutral', tone:'neutral', aiLang:'en', randomize:false, realMoney:false };
+const cfg = { advanced:false, expr:'neutral', body:'neutral', tone:'neutral', aiLang:'en', randomize:false, realMoney:false, singleMode:false, opponent:'none' };
 // format a coin amount for display: real-money mode → currency, else token+unit (per language)
 const COIN_UNIT = { zh:'金币', en:'coins', ja:'コイン' };
 function fmtAmt(coins, lk){ lk = lk || lang;
@@ -454,6 +519,7 @@ function eff(){
 function aiLine(n){ const c=eff(); const L=SAY[c.lang]||SAY.en; const arr=(L.tone[c.tone]||L.tone.neutral);
   return arr[Math.floor(Math.random()*arr.length)].replace('%', `<span class="num">${fmtAmt(n, c.lang)}</span>`); }
 function aiThink(){ const c=eff(); return (SAY[c.lang]||SAY.en).think; }
+function aiAsk(){ const c=eff(); const a=(SAY[c.lang]||SAY.en).ask||SAY.en.ask; return a[c.tone]||a.neutral; }
 
 const $ = id => document.getElementById(id);
 
@@ -476,6 +542,15 @@ function applyStaticTexts(){
   $('setNote').textContent = CUR.setNote;
   $('setMoney').textContent = CUR.setMoney;
   $('setMoneyNote').textContent = CUR.moneyNote;
+  $('setMode').textContent = CUR.setMode;
+  $('setModeNote').textContent = CUR.modeNote;
+  $('maoPrompt').textContent = CUR.maoPrompt;
+  $('btnMao').textContent = CUR.btnMao;
+  $('aboutBtn').textContent = CUR.aboutBtn;
+  $('aboutTitle').textContent = CUR.aboutTitle;
+  $('aboutClose').textContent = CUR.aboutClose;
+  const credit = `<div class="credit"><b>${CUR.aboutAuthor}</b> · ${[AUTHOR.name,AUTHOR.affiliation,AUTHOR.year,AUTHOR.contact].filter(Boolean).join(' · ')} · v${APP_VERSION}</div>`;
+  $('aboutBody').innerHTML = CUR.aboutBody + credit;
   $('setAdv').textContent = CUR.setAdv;
   $('lblExpr').textContent = CUR.lblExpr; $('lblBody').textContent = CUR.lblBody;
   $('lblTone').textContent = CUR.lblTone; $('lblLang').textContent = CUR.lblLang;
@@ -483,11 +558,13 @@ function applyStaticTexts(){
   $('bodyF').textContent=CUR.bodyF; $('bodyN').textContent=CUR.bodyN; $('bodyB').textContent=CUR.bodyB;
   $('toneP').textContent=CUR.toneP; $('toneN').textContent=CUR.toneN; $('toneR').textContent=CUR.toneR;
   $('lblRand').textContent = CUR.lblRand;
+  $('lblOpp').textContent = CUR.lblOpp; $('oppNone').textContent=CUR.oppNone; $('oppComputer').textContent=CUR.oppComputer;
+  $('ikExpLabel').textContent = CUR.ikExpLabel;
   $('setDone').textContent = CUR.setDone;
   $('resTitle').textContent = CUR.resTitle;
   $('resAgain').textContent = CUR.again;
   $('resMenu').textContent = CUR.backMenu;
-  $('ikTitle').textContent=CUR.ikTitle; $('ikIdLabel').textContent=CUR.ikIdLabel;
+  $('ikTitle').textContent=CUR.ikTitle; $('ikIdLabel').textContent=CUR.ikIdLabel; $('ikComprehIntro').textContent=CUR.ikComprehIntro;
   $('ikQ1').textContent=CUR.ikQ1; $('ikQ1a').textContent=CUR.ikQ1a; $('ikQ1b').textContent=CUR.ikQ1b; $('ikQ1c').textContent=CUR.ikQ1c;
   $('ikQ2').textContent=CUR.ikQ2; $('ikQ2a').textContent=CUR.ikQ2a; $('ikQ2b').textContent=CUR.ikQ2b; $('ikQ2c').textContent=CUR.ikQ2c;
   $('ikBegin').textContent=CUR.ikBegin; $('ikBack').textContent=CUR.ikBack; $('resDecTitle').textContent=CUR.resDecTitle;
@@ -724,11 +801,17 @@ const btnA=$('btnAccept'), btnR=$('btnReject');
 function say(html){ bubble.classList.remove('show'); void bubble.offsetWidth; bubble.innerHTML=html; bubble.classList.add('show'); }
 function hideSay(){ bubble.classList.remove('show'); }
 function setButtons(on){ btnA.disabled=!on; btnR.disabled=!on; }
+// single-mode (strategy method) slider helpers
+function showSlider(on){ $('sliderBox').classList.toggle('hidden', !on); $('bottomBar').querySelector('.controls').style.display = on ? 'none' : ''; }
+function updateMaoVal(){ $('maoVal').textContent = fmtAmt(+$('maoSlider').value, eff().lang); }
+function singleOffer(){ return 30 + Math.floor(Math.random()*31); }   // one hidden proposer offer (30–60) for closure/payout
 
 // ============ game ============
 // Version: MAJOR.MINOR. MINOR = cosmetic/wording/animation tweaks (data-compatible).
 // MAJOR = changes that affect data comparability (rounds, catch logic, estimate method, condition defs).
-const APP_VERSION = "5.0";
+const APP_VERSION = "5.5";
+// ↓ edit these for the About / 说明 panel
+const AUTHOR = { name:"YIKAI WANG", affiliation:"関西学院大学 / Kwansei Gakuin University", year:"2026", contact:"" };
 const POT=100, ROUNDS=10;
 // real-money incentive (optional, off by default). Total pie = REAL_STAKE for the 100-coin pot.
 // Level chosen from prior research (classic UG ~$10 / Roth et al. 1991 Japan-inclusive scale).
@@ -752,7 +835,8 @@ const participant = {id:'', attempts:0};
 function applyGameTexts(){
   DCUR = I18N[eff().lang] || I18N[lang];
   $('rulesT').textContent = DCUR.rulesTitle;
-  $('rulesB').textContent = DCUR.rules;   // never promise real payout to the participant
+  const oppFrame = cfg.opponent==='computer' ? ' '+DCUR.oppFrameComputer : '';
+  $('rulesB').textContent = DCUR.rules + oppFrame;   // never promise real payout; opponent-identity framing is an IV
   $('btnAccept').textContent = DCUR.accept;
   $('btnReject').textContent = DCUR.reject;
   $('menuBtn').textContent = "≡ " + DCUR.menu;
@@ -780,21 +864,25 @@ function startGame(){
   round=1; offer=0; awaiting=false; roundLog=[]; reversals=[];
   curOffer=STAIR_START; stairStep=STAIR_BIG; downCount=0; lastStepDir=0;
   catchRounds=new Set(); catchPlan={};
-  const hi1 = 80 + Math.floor(Math.random()*4);    // 80-83, should accept
-  const hi2 = 88 + Math.floor(Math.random()*5);    // 88-92, should accept (clearly differs from hi1)
-  const low = 10 + Math.floor(Math.random()*11);   // 10-20, should reject
-  const specs=[{offer:hi1,expectAccept:true},{offer:hi2,expectAccept:true},{offer:low,expectAccept:false}];
-  for(let i=specs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [specs[i],specs[j]]=[specs[j],specs[i]]; }
-  const pool=[3,4,5,6,7,8,9];
-  for(let i=0;i<N_CATCH;i++){ const j=Math.floor(Math.random()*pool.length); const rn=pool.splice(j,1)[0]; catchRounds.add(rn); catchPlan[rn]=specs[i]; }
+  if(!cfg.singleMode){   // repeated mode only: plant 3 calibration (catch) trials
+    const hi1 = 80 + Math.floor(Math.random()*4);    // 80-83, should accept
+    const hi2 = 88 + Math.floor(Math.random()*5);    // 88-92, should accept (clearly differs from hi1)
+    const low = 10 + Math.floor(Math.random()*11);   // 10-20, should reject
+    const specs=[{offer:hi1,expectAccept:true},{offer:hi2,expectAccept:true},{offer:low,expectAccept:false}];
+    for(let i=specs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [specs[i],specs[j]]=[specs[j],specs[i]]; }
+    const pool=[3,4,5,6,7,8,9];
+    for(let i=0;i<N_CATCH;i++){ const j=Math.floor(Math.random()*pool.length); const rn=pool.splice(j,1)[0]; catchRounds.add(rn); catchPlan[rn]=specs[i]; }
+  }
   gameStartMs=performance.now();
   clearCoins(); applySeatedPose(); setReach(0); applyCondition();
   rig.head.rotation.set(0,0,0);
   $('result').classList.remove('show');
   $('hud').classList.add('show'); $('bottomBar').classList.add('show'); $('menuBtn').classList.add('show');
+  showSlider(false);
+  $('roundc').style.display = cfg.singleMode ? 'none' : '';
   applyGameTexts();
-  updateRoundUI();
-  nextRound();
+  if(cfg.singleMode){ singleRound(); }
+  else { updateRoundUI(); nextRound(); }
 }
 function backToMenu(){
   runToken++; awaiting=false; setButtons(false);
@@ -868,6 +956,24 @@ async function decide(accepted){
   nextRound();
 }
 
+// single-round strategy method: opponent shows demeanor + asks (no number), participant sets MAO on a slider
+async function singleRound(){
+  const token=runToken;
+  setButtons(false); showSlider(false); hideSay(); setReach(0);
+  think.classList.add('show'); think.textContent = aiThink();
+  await anim(0.5,p=>{ rig.head.rotation.x=0.32*p; });
+  await wait(360); if(token!==runToken) return;
+  think.classList.remove('show');
+  await anim(0.3,p=>{ rig.head.rotation.x=0.32*(1-p); }); if(token!==runToken) return;
+  say(aiAsk());                 // FLE/social cues present; no specific offer revealed
+  await reachAnim();
+  if(token!==runToken) return;
+  $('maoSlider').value=50; updateMaoVal();
+  showSlider(true);
+  roundStartMs=performance.now();
+  awaiting=true;
+}
+
 // ---- post-game survey: manipulation checks (expr/tone), perceived fairness, anger (emotion mediator),
 //      mind perception (anthropomorphism), and a funnel-debrief item. Shown once after the 10 rounds.
 const SV_ITEMS = [['friendly','svFriendly'],['polite','svPolite'],['fair','svFair'],['anger','svAnger'],['mind','svMind']];
@@ -900,32 +1006,35 @@ $('svDone').onclick = ()=>{
 
 function finish(){
   setButtons(false); hideSay();
-  const stair=roundLog.filter(r=>r.type==='staircase');
-  const acc=stair.filter(r=>r.accepted).map(r=>r.offer);
-  const rej=stair.filter(r=>!r.accepted).map(r=>r.offer);
-  const minAcc=acc.length?Math.min.apply(null,acc):null, maxRej=rej.length?Math.max.apply(null,rej):null;
-  let est, method;
-  if(reversals.length>=2){ const rr=reversals.length>=3?reversals.slice(1):reversals; est=Math.round(rr.reduce((a,b)=>a+b,0)/rr.length); method='reversal_mean'; }
-  else { est=Math.round(curOffer); method='final_level'; }   // too few reversals → final staircase level
-  const pct=Math.round(est/POT*100);
-  const catches=roundLog.filter(r=>r.type==='catch');
-  const catchPassed = catches.length? catches.every(r=>r.accepted===r.expectAccept) : null;
-  const monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
-  const flags=[]; if(catchPassed===false) flags.push('failed_catch'); if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals');
   const c=eff();
-  // real-money incentive: pay one randomly chosen REAL decision round (staircase, never a catch)
-  let payout=null;
-  if(cfg.realMoney && stair.length){
-    const pick=stair[Math.floor(Math.random()*stair.length)];
-    const earnedCoins = pick.accepted ? pick.offer : 0;
-    payout={ round:pick.round, offerCoins:pick.offer, accepted:pick.accepted, earnedCoins, earnedJPY:earnedCoins*COIN_VALUE };
+  let est, method, minAcc=null, maxRej=null, catchPassed=null, monotonic=true, payout=null;
+  if(cfg.singleMode){
+    const s = roundLog.find(r=>r.type==='single') || {mao:50, offer:0, accepted:false};
+    est = s.mao; method='slider_mao';                                   // strategy-method MAO = the slider value
+    if(cfg.realMoney){ const earned=s.accepted?s.offer:0; payout={ round:1, offerCoins:s.offer, accepted:s.accepted, earnedCoins:earned, earnedJPY:earned*COIN_VALUE }; }
+  } else {
+    const stair=roundLog.filter(r=>r.type==='staircase');
+    const acc=stair.filter(r=>r.accepted).map(r=>r.offer);
+    const rej=stair.filter(r=>!r.accepted).map(r=>r.offer);
+    minAcc=acc.length?Math.min.apply(null,acc):null; maxRej=rej.length?Math.max.apply(null,rej):null;
+    if(reversals.length>=2){ const rr=reversals.length>=3?reversals.slice(1):reversals; est=Math.round(rr.reduce((a,b)=>a+b,0)/rr.length); method='reversal_mean'; }
+    else { est=Math.round(curOffer); method='final_level'; }            // too few reversals → final staircase level
+    const catches=roundLog.filter(r=>r.type==='catch');
+    catchPassed = catches.length? catches.every(r=>r.accepted===r.expectAccept) : null;
+    monotonic = (maxRej===null||minAcc===null) ? true : (maxRej < minAcc);
+    if(cfg.realMoney && stair.length){ const pick=stair[Math.floor(Math.random()*stair.length)]; const earned=pick.accepted?pick.offer:0; payout={ round:pick.round, offerCoins:pick.offer, accepted:pick.accepted, earnedCoins:earned, earnedJPY:earned*COIN_VALUE }; }
   }
+  const pct=Math.round(est/POT*100);
+  const flags=[]; if(catchPassed===false) flags.push('failed_catch');
+  if(!cfg.singleMode){ if(!monotonic) flags.push('non_monotonic'); if(reversals.length<2) flags.push('few_reversals'); }
   const payload={ ts:new Date().toISOString(), appVersion:APP_VERSION, participantId:participant.id, uiLang:lang,
-    condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced},
+    mode: cfg.singleMode?'single':'repeated',
+    condition:{expr:c.expr,body:c.body,tone:c.tone,aiLang:c.lang,advanced:cfg.advanced,opponent:cfg.opponent},
+    expectedOffer: (participant.expectedOffer!=null?participant.expectedOffer:null),
     languageBackground: participant.lang||null, survey:{...survey},
     realMoney:cfg.realMoney, stakeJPY:cfg.realMoney?REAL_STAKE:0, payout,
     minAcceptable:est, pctOfPot:pct, estimateMethod:method,
-    nReversals:reversals.length, reversals:reversals.slice(), monotonic, catchPassed, flags,
+    nReversals:cfg.singleMode?null:reversals.length, reversals:cfg.singleMode?null:reversals.slice(), monotonic, catchPassed, flags,
     minAccepted:minAcc, maxRejected:maxRej, comprehensionAttempts:participant.attempts,
     durationMs:Math.round(performance.now()-gameStartMs), rounds:roundLog.slice() };
   window.__lastResult=payload;
@@ -937,15 +1046,21 @@ function finish(){
   $('resPay').style.display='none';   // payout is recorded silently in data; never shown to the participant
   $('resMsg').textContent = CUR.resMsg;
   $('resNote').textContent = CUR.resNote(pct);
-  $('resDecTitle').textContent = CUR.resDecTitle;
-  $('resDecisions').innerHTML = roundLog.map(r=>{
-    const dec = r.accepted ? `<span class="dec acc">${CUR.accept}</span>` : `<span class="dec rej">${CUR.reject}</span>`;
-    const cal = r.type==='catch';
-    const tag = cal ? `<span class="tag">${CUR.resCalTag}</span>` : '';
-    const rt = `<span class="rt">${(r.rtMs/1000).toFixed(1)}${RT_UNIT[lang]||'s'}</span>`;
-    return `<div class="drow${cal?' cal':''}"><span class="rn">${CUR.resRoundWord} ${r.round}${tag}</span><span class="amt">${fmtAmt(r.offer, lang)}</span>${dec}${rt}</div>`;
-  }).join('');
-  $('resCalNote').textContent = CUR.resCalNote;
+  if(cfg.singleMode){
+    const s = roundLog.find(r=>r.type==='single') || {offer:0, accepted:false};
+    $('resDecTitle').style.display='none'; $('resCalNote').textContent='';
+    $('resDecisions').innerHTML = `<div class="decNote" style="opacity:.8;font-size:13px">${CUR.resSingleOutcome(fmtAmt(s.offer,lang), s.accepted)}</div>`;
+  } else {
+    $('resDecTitle').style.display=''; $('resDecTitle').textContent = CUR.resDecTitle;
+    $('resDecisions').innerHTML = roundLog.map(r=>{
+      const dec = r.accepted ? `<span class="dec acc">${CUR.accept}</span>` : `<span class="dec rej">${CUR.reject}</span>`;
+      const cal = r.type==='catch';
+      const tag = cal ? `<span class="tag">${CUR.resCalTag}</span>` : '';
+      const rt = `<span class="rt">${(r.rtMs/1000).toFixed(1)}${RT_UNIT[lang]||'s'}</span>`;
+      return `<div class="drow${cal?' cal':''}"><span class="rn">${CUR.resRoundWord} ${r.round}${tag}</span><span class="amt">${fmtAmt(r.offer, lang)}</span>${dec}${rt}</div>`;
+    }).join('');
+    $('resCalNote').textContent = CUR.resCalNote;
+  }
   $('result').classList.add('show');
 }
 
@@ -958,8 +1073,8 @@ function submitData(p){
 function csvCell(v){ const x=(v==null?'':typeof v==='object'?JSON.stringify(v):String(v)); return '"'+x.replace(/"/g,'""')+'"'; }
 function resultCSV(p){
   const pay=p.payout||{}; const lb=p.languageBackground||{}; const sv=p.survey||{};
-  const cols=['ts','appVersion','participantId','uiLang','advanced','expr','body','tone','aiLang','l1','decisionLang','proficiency','aoa','realMoney','stakeJPY','payoutRound','payoutEarnedJPY','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','q_friendly','q_polite','q_fair','q_anger','q_mind','debrief','comprehensionAttempts','durationMs','rounds'];
-  const row=[p.ts,p.appVersion,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,lb.l1,lb.decisionLang,lb.proficiency,lb.aoa,p.realMoney,p.stakeJPY,pay.round,pay.earnedJPY,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,sv.friendly,sv.polite,sv.fair,sv.anger,sv.mind,sv.debrief,p.comprehensionAttempts,p.durationMs,p.rounds];
+  const cols=['ts','appVersion','mode','participantId','uiLang','advanced','expr','body','tone','aiLang','opponent','expectedOffer','l1','decisionLang','proficiency','aoa','realMoney','stakeJPY','payoutRound','payoutEarnedJPY','minAcceptable','pctOfPot','estimateMethod','nReversals','reversals','monotonic','catchPassed','flags','minAccepted','maxRejected','q_friendly','q_polite','q_fair','q_anger','q_mind','debrief','comprehensionAttempts','durationMs','rounds'];
+  const row=[p.ts,p.appVersion,p.mode,p.participantId,p.uiLang,p.condition.advanced,p.condition.expr,p.condition.body,p.condition.tone,p.condition.aiLang,p.condition.opponent,p.expectedOffer,lb.l1,lb.decisionLang,lb.proficiency,lb.aoa,p.realMoney,p.stakeJPY,pay.round,pay.earnedJPY,p.minAcceptable,p.pctOfPot,p.estimateMethod,p.nReversals,p.reversals,p.monotonic,p.catchPassed,p.flags,p.minAccepted,p.maxRejected,sv.friendly,sv.polite,sv.fair,sv.anger,sv.mind,sv.debrief,p.comprehensionAttempts,p.durationMs,p.rounds];
   return cols.join(',')+'\n'+row.map(csvCell).join(',');
 }
 function downloadResult(){ const t=resultCSV(window.__lastResult); const blob=new Blob([t],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ultimatum_'+(window.__lastResult.participantId||'data')+'.csv'; a.click(); }
@@ -987,6 +1102,8 @@ window.exportAllCSV = exportAllCSV; window.loadSessions = loadSessions; window.c
 
 // ============ settings UI ============
 function refreshSettingsUI(){
+  $('tgMode').textContent = cfg.singleMode ? CUR.on : CUR.off;
+  $('tgMode').classList.toggle('on', cfg.singleMode);
   $('tgMoney').textContent = cfg.realMoney ? CUR.on : CUR.off;
   $('tgMoney').classList.toggle('on', cfg.realMoney);
   $('tgAdv').textContent = cfg.advanced ? CUR.on : CUR.off;
@@ -1004,9 +1121,13 @@ function refreshSettingsUI(){
   setGrp('body', cfg.body, true);
   setGrp('tone', cfg.tone, true);
   setGrp('aiLang', cfg.aiLang||lang, false);
+  setGrp('opponent', cfg.opponent, false);
 }
+$('aboutBtn').onclick = ()=>{ $('about').classList.add('show'); };
+$('aboutClose').onclick = ()=>{ $('about').classList.remove('show'); };
 $('gear').onclick = ()=>{ $('settings').classList.remove('hidden'); refreshSettingsUI(); };
 $('setDone').onclick = ()=>{ $('settings').classList.add('hidden'); };
+$('tgMode').onclick = ()=>{ cfg.singleMode=!cfg.singleMode; refreshSettingsUI(); };
 $('tgMoney').onclick = ()=>{ cfg.realMoney=!cfg.realMoney; refreshSettingsUI(); };
 $('tgAdv').onclick = ()=>{ cfg.advanced=!cfg.advanced; refreshSettingsUI(); };
 $('tgRand').onclick = ()=>{ cfg.randomize=!cfg.randomize; refreshSettingsUI(); };
@@ -1022,6 +1143,16 @@ document.querySelectorAll('#advBox .opt').forEach(o=>{
 // ============ wiring ============
 btnA.onclick = ()=>decide(true);
 btnR.onclick = ()=>decide(false);
+$('maoSlider').oninput = updateMaoVal;
+$('btnMao').onclick = ()=>{
+  if(!awaiting) return;
+  awaiting=false;
+  const mao=+$('maoSlider').value, rt=Math.round(performance.now()-roundStartMs);
+  showSlider(false); hideSay(); setReach(0);
+  const hidden=singleOffer();                                   // revealed only after MAO is fixed
+  roundLog.push({round:1, type:'single', offer:hidden, mao, accepted: hidden>=mao, rtMs:rt});
+  showSurvey();
+};
 $('menuBtn').onclick = ()=>{ $('confirm').classList.add('show'); };
 $('confNo').onclick = ()=>{ $('confirm').classList.remove('show'); };
 $('confYes').onclick = ()=>{ backToMenu(); };
@@ -1034,11 +1165,14 @@ function showIntake(){
   const dl = LANG_NAME[eff().lang] || eff().lang;   // proficiency/AoA asked about the decision language
   $('ikProfQ').textContent = CUR.ikProfQ(dl);
   $('ikAoaQ').textContent = CUR.ikAoaQ(dl);
+  $('ikExpSlider').value = 50; updateExpVal();      // baseline expected-offer slider
   document.querySelectorAll('.ikOpts').forEach(g=>{ delete g.dataset.sel; g.querySelectorAll('.opt').forEach(o=>o.classList.remove('active')); });
   updateIkLangVisibility();   // hidden until L1 chosen; reveal only if decision language is foreign
   $('start').style.display='none'; $('intake').classList.remove('hidden');
 }
 document.querySelectorAll('.ikOpts .opt').forEach(o=>{ o.onclick=()=>{ const g=o.closest('.ikOpts'); g.dataset.sel=o.dataset.v; g.querySelectorAll('.opt').forEach(x=>x.classList.toggle('active',x===o)); if(g.dataset.q==='l1') updateIkLangVisibility(); }; });
+function updateExpVal(){ $('ikExpVal').textContent = fmtAmt(+$('ikExpSlider').value, lang); }
+$('ikExpSlider').oninput = updateExpVal;
 // proficiency/AoA only matter when the decision language is FOREIGN to the participant (L1 ≠ decision language)
 function updateIkLangVisibility(){
   const l1 = document.querySelector('.ikOpts[data-q="l1"]').dataset.sel;
@@ -1062,6 +1196,7 @@ $('ikBegin').onclick = ()=>{
     if(!prof || !aoa){ $('ikErr').textContent=CUR.ikBgErr; return; }
   }
   participant.lang = { l1, decisionLang:eff().lang, proficiency: foreign?+prof:null, aoa: foreign?+aoa:null };
+  participant.expectedOffer = +$('ikExpSlider').value;
   participant.id = ($('ikId').value||'').trim() || ('P'+Date.now().toString(36));
   $('intake').classList.add('hidden'); startGame();
 };
